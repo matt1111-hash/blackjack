@@ -1,7 +1,9 @@
+import { useEffect } from 'react';
 import { useGameStore } from '../../store/gameStore';
 import { DealerArea } from './DealerArea';
 import { PlayerArea } from './PlayerArea';
 import { Balance } from '../UI/Balance';
+import { GameResult } from '../UI/GameResult';
 import type { ChipValue } from '../../types';
 import './BlackjackTable.css';
 
@@ -13,13 +15,23 @@ export function BlackjackTable() {
     playerHands,
     activeHandIndex,
     phase,
+    roundResults,
     placeBet,
     deal,
     hit,
     stand,
     double,
     split,
+    endDealerTurn,
+    newRound,
   } = useGameStore();
+
+  // Trigger dealer turn when phase changes to dealerTurn
+  useEffect(() => {
+    if (phase === 'dealerTurn') {
+      endDealerTurn();
+    }
+  }, [phase, endDealerTurn]);
 
   const handlePlaceBet = (amount: ChipValue) => {
     placeBet(amount);
@@ -27,6 +39,10 @@ export function BlackjackTable() {
 
   const handleDeal = () => {
     deal();
+  };
+
+  const handleNewRound = () => {
+    newRound();
   };
 
   return (
@@ -42,7 +58,7 @@ export function BlackjackTable() {
         <div className="blackjack-table__dealer">
           <DealerArea
             hand={dealerHand}
-            showHoleCard={phase === 'dealerTurn' || phase === 'finished'}
+            showHoleCard={phase === 'finished'}
           />
         </div>
 
@@ -73,6 +89,20 @@ export function BlackjackTable() {
               DEAL
             </button>
           </div>
+        )}
+
+        {/* New Round button when finished */}
+        {phase === 'finished' && (
+          <div className="blackjack-table__new-round-btn">
+            <button className="deal-button" onClick={handleNewRound}>
+              NEW ROUND
+            </button>
+          </div>
+        )}
+
+        {/* Game results overlay */}
+        {phase === 'finished' && roundResults && (
+          <GameResult results={roundResults} hands={playerHands} />
         )}
 
         {/* Shoe indicator */}

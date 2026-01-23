@@ -2,10 +2,17 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Card, Hand, GamePhase } from '../types';
 import { createShoe, shuffle, dealCard } from '../logic/deck';
-import { calculateHandValue, isBlackjack, createHand, isBusted } from '../logic/hand';
+import { isBlackjack, createHand, isBusted } from '../logic/hand';
+import { dealerPlay, calculateResults, applyPayouts } from '../logic/rules';
 
 const INITIAL_BALANCE = 5000;
 const SHOE_DECKS = 6;
+
+export interface RoundResult {
+  playerHandIndex: number;
+  result: 'win' | 'lose' | 'push' | 'blackjack';
+  payout: number;
+}
 
 interface GameState {
   // Balance
@@ -13,7 +20,7 @@ interface GameState {
 
   // Shoe
   shoe: Card[];
-  shoePenetration: number; // cards dealt / total cards
+  shoePenetration: number;
 
   // Hands
   playerHands: Hand[];
@@ -26,6 +33,9 @@ interface GameState {
   // Current bet
   currentBet: number;
 
+  // Round results (for display)
+  roundResults: RoundResult[] | null;
+
   // Actions
   placeBet: (amount: number) => void;
   deal: () => void;
@@ -33,6 +43,7 @@ interface GameState {
   stand: () => void;
   double: () => void;
   split: () => void;
+  endDealerTurn: () => void;
   newRound: () => void;
   resetBalance: () => void;
 }
@@ -45,7 +56,7 @@ function dealInitialHands(shoe: Card[], bet: number): { playerHand: Hand; dealer
   const [playerCard1, shoe1] = dealCard(shoe, true)!;
   const [dealerCard1, shoe2] = dealCard(shoe1, true)!;
   const [playerCard2, shoe3] = dealCard(shoe2, true)!;
-  const [dealerCard2, remainingShoe] = dealCard(shoe3, false)!; // face down
+  const [dealerCard2, remainingShoe] = dealCard(shoe3, false)!;
 
   const playerHand: Hand = {
     cards: [playerCard1, playerCard2],
@@ -80,6 +91,7 @@ export const useGameStore = create<GameState>()(
       activeHandIndex: 0,
       phase: 'betting',
       currentBet: 0,
+      roundResults: null,
 
       // Actions
       placeBet: (amount: number) => {
@@ -95,10 +107,8 @@ export const useGameStore = create<GameState>()(
 
         const { playerHand, dealerHand, remainingShoe } = dealInitialHands(shoe, currentBet);
 
-        // Check for immediate blackjack
         const playerBJ = playerHand.isBlackjack;
         const dealerBJ = isBlackjack(dealerHand.cards);
-        const dealerValue = calculateHandValue([dealerHand.cards[0]]); // Only face-up card
 
         let newPhase: GamePhase = 'playing';
 
@@ -108,9 +118,6 @@ export const useGameStore = create<GameState>()(
           newPhase = 'finished';
         } else if (playerBJ && dealerBJ) {
           newPhase = 'finished';
-        } else if (dealerValue === 10 || dealerValue === 11) {
-          // Dealer might have blackjack, check on stand
-          newPhase = 'playing';
         }
 
         set({
@@ -120,7 +127,7 @@ export const useGameStore = create<GameState>()(
           dealerHand,
           activeHandIndex: 0,
           phase: newPhase,
-          // Note: bet remains until round ends
+          roundResults: null,
         });
       },
 
@@ -140,9 +147,7 @@ export const useGameStore = create<GameState>()(
         const newHands = [...playerHands];
         newHands[activeHandIndex] = newHand;
 
-        // Check if busted
         if (newHand.isBusted) {
-          // Move to next hand or dealer turn
           const nextIndex = activeHandIndex + 1;
           if (nextIndex < newHands.length) {
             set({
@@ -151,7 +156,6 @@ export const useGameStore = create<GameState>()(
               activeHandIndex: nextIndex,
             });
           } else {
-            // All hands done, dealer turn
             set({
               shoe: remainingShoe,
               playerHands: newHands,
@@ -178,7 +182,6 @@ export const useGameStore = create<GameState>()(
             activeHandIndex: nextIndex,
           });
         } else {
-          // All hands done, dealer turn
           set({
             playerHands: newHands,
             phase: 'dealerTurn',
@@ -204,7 +207,6 @@ export const useGameStore = create<GameState>()(
         const newHands = [...playerHands];
         newHands[activeHandIndex] = newHand;
 
-        // Move to next hand or dealer turn
         const nextIndex = activeHandIndex + 1;
         if (nextIndex < newHands.length) {
           set({
@@ -229,7 +231,7 @@ export const useGameStore = create<GameState>()(
         if (!hand || hand.cards.length !== 2) return;
 
         const [card1, card2] = hand.cards;
-        if (card1.rank !== card2.rank) return; // Can only split same rank
+        if (card1.rank !== card2.rank) return;
 
         const [newCard1, shoe1] = dealCard(shoe, true)!;
         const [newCard2, shoe2] = dealCard(shoe1, true)!;
@@ -263,15 +265,35 @@ export const useGameStore = create<GameState>()(
           balance: balance - hand.bet,
           shoe: shoe2,
           playerHands: newHands,
-          activeHandIndex: activeHandIndex + 1, // Stay on first split hand
+          activeHandIndex: activeHandIndex + 1,
+        });
+      },
+
+      endDealerTurn: () => {
+        const { shoe, playerHands, dealerHand, balance } = get();
+
+        // Run dealer play
+        const { hand: finalDealerHand, remainingShoe } = dealerPlay(dealerHand, shoe);
+
+        // Calculate results
+        const results = calculateResults(playerHands, finalDealerHand);
+
+        // Apply payouts
+        const newBalance = applyPayouts(balance, results, playerHands);
+
+        set({
+          shoe: remainingShoe,
+          dealerHand: finalDealerHand,
+          roundResults: results,
+          balance: newBalance,
+          phase: 'finished',
         });
       },
 
       newRound: () => {
         const { shoe } = get();
-        // Reshuffle if penetration reached (~75% = 1.5 decks left = 78 cards)
         const cardsRemaining = shoe.length;
-        const reshuffleThreshold = SHOE_DECKS * 52 * 0.25; // 25% remaining = reshuffle
+        const reshuffleThreshold = SHOE_DECKS * 52 * 0.25;
 
         const newShoe = cardsRemaining < reshuffleThreshold ? createFreshShoe() : shoe;
 
@@ -283,6 +305,7 @@ export const useGameStore = create<GameState>()(
           activeHandIndex: 0,
           phase: 'betting',
           currentBet: 0,
+          roundResults: null,
         });
       },
 
