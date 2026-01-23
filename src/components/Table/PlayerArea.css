@@ -1,0 +1,81 @@
+.player-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.player-area__betting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.player-area__bet-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+}
+
+.player-area__bet-chips {
+  transform: scale(0.8);
+}
+
+.player-area__hands {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.player-area__hand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.player-area__hand--active {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+}
+
+.player-area__hand--busted {
+  opacity: 0.6;
+}
+
+.player-area__hand-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+}
+
+.player-area__hand-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 4px 12px;
+  border-radius: 16px;
+}
+
+.player-area__hand-value--busted {
+  background: #dc2626;
+}
+
+.player-area__empty {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}

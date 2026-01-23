@@ -1,0 +1,73 @@
+.card {
+  width: 80px;
+  height: 112px;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 4px 8px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 6px;
+  box-sizing: border-box;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.card--back {
+  background: linear-gradient(135deg, #1e3a5f 0%, #0f2744 100%);
+  border: 2px solid #2d4a6f;
+}
+
+.card__pattern {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 4px,
+    rgba(255, 255, 255, 0.03) 4px,
+    rgba(255, 255, 255, 0.03) 8px
+  );
+}
+
+.card__corner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  position: absolute;
+}
+
+.card__corner--top {
+  top: 4px;
+  left: 4px;
+}
+
+.card__corner--bottom {
+  bottom: 4px;
+  right: 4px;
+  transform: rotate(180deg);
+}
+
+.card__rank {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.card__suit {
+  font-size: 12px;
+  margin-top: 1px;
+}
+
+.card__center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 36px;
+  opacity: 0.9;
+}

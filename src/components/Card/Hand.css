@@ -1,0 +1,12 @@
+.hand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 100px;
+  min-height: 120px;
+}
+
+.hand__card-wrapper {
+  position: absolute;
+  transition: transform 0.2s ease-out;
+}
