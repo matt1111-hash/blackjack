@@ -79,6 +79,7 @@ export function BlackjackTable() {
             gamePhase={phase}
             canDouble={balance >= (playerHands[activeHandIndex]?.bet || 0)}
             canSplit={playerHands.length === 1 && playerHands[0]?.cards.length === 2}
+            roundResults={roundResults}
           />
         </div>
 

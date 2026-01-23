@@ -1,0 +1,23 @@
+.chip-button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.chip-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.animated-chip-stack {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.chip-stack-item {
+  position: absolute;
+  inset: 0;
+}
