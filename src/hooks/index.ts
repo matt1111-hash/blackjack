@@ -1,2 +1,2 @@
 export { useGameAnimations, useCardCount } from './useGameAnimations';
-export { useSound, useVolume } from './useSound';
+export { useSound, useVolume, useGameSounds } from './useSound';
