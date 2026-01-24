@@ -2,26 +2,37 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 20px;
-  min-width: 200px;
+  gap: 6px;
+  padding: 8px;
+  min-width: 120px;
+  position: relative;
 }
 
 .dealer-area__label {
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 600;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   color: rgba(255, 255, 255, 0.6);
   text-transform: uppercase;
 }
 
 .dealer-area__value {
-  font-size: 20px;
+  font-size: 14px;
   font-weight: 700;
   color: white;
   background: rgba(0, 0, 0, 0.4);
-  padding: 4px 16px;
-  border-radius: 20px;
-  min-width: 32px;
+  padding: 2px 10px;
+  border-radius: 12px;
+  min-width: 24px;
   text-align: center;
+}
+
+/* Dealer avatar glow effect */
+.dealer-area .dealer-avatar {
+  filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.3));
+  transition: filter 0.3s ease;
+}
+
+.dealer-area:hover .dealer-avatar {
+  filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.5));
 }

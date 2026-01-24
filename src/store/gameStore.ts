@@ -43,7 +43,6 @@ interface GameState {
   stand: () => void;
   double: () => void;
   split: () => void;
-  endDealerTurn: () => void;
   newRound: () => void;
   resetBalance: () => void;
 }
@@ -132,7 +131,7 @@ export const useGameStore = create<GameState>()(
       },
 
       hit: () => {
-        const { shoe, playerHands, activeHandIndex } = get();
+        const { shoe, playerHands, activeHandIndex, dealerHand, balance } = get();
         const hand = playerHands[activeHandIndex];
         if (!hand || hand.isStanding || hand.isDoubled) return;
 
@@ -156,10 +155,18 @@ export const useGameStore = create<GameState>()(
               activeHandIndex: nextIndex,
             });
           } else {
+            // All hands done - run dealer turn directly
+            const { hand: finalDealerHand, remainingShoe: finalShoe } = dealerPlay(dealerHand, remainingShoe);
+            const results = calculateResults(newHands, finalDealerHand);
+            const newBalance = applyPayouts(balance, results, newHands);
+
             set({
-              shoe: remainingShoe,
+              shoe: finalShoe,
+              dealerHand: finalDealerHand,
               playerHands: newHands,
-              phase: 'dealerTurn',
+              roundResults: results,
+              balance: newBalance,
+              phase: 'finished',
             });
           }
         } else {
@@ -171,7 +178,7 @@ export const useGameStore = create<GameState>()(
       },
 
       stand: () => {
-        const { playerHands, activeHandIndex } = get();
+        const { playerHands, activeHandIndex, shoe, dealerHand, balance } = get();
         const newHands = [...playerHands];
         newHands[activeHandIndex] = { ...newHands[activeHandIndex], isStanding: true };
 
@@ -182,9 +189,18 @@ export const useGameStore = create<GameState>()(
             activeHandIndex: nextIndex,
           });
         } else {
+          // All hands done - run dealer turn directly
+          const { hand: finalDealerHand, remainingShoe } = dealerPlay(dealerHand, shoe);
+          const results = calculateResults(newHands, finalDealerHand);
+          const newBalance = applyPayouts(balance, results, newHands);
+
           set({
+            shoe: remainingShoe,
+            dealerHand: finalDealerHand,
             playerHands: newHands,
-            phase: 'dealerTurn',
+            roundResults: results,
+            balance: newBalance,
+            phase: 'finished',
           });
         }
       },
@@ -216,11 +232,18 @@ export const useGameStore = create<GameState>()(
             activeHandIndex: nextIndex,
           });
         } else {
+          // All hands done - run dealer turn directly
+          const { hand: finalDealerHand, remainingShoe: finalShoe } = dealerPlay(dealerHand, remainingShoe);
+          const results = calculateResults(newHands, finalDealerHand);
+          const newBalance = applyPayouts(balance - hand.bet, results, newHands);
+
           set({
-            balance: balance - hand.bet,
-            shoe: remainingShoe,
+            balance: newBalance,
+            shoe: finalShoe,
+            dealerHand: finalDealerHand,
             playerHands: newHands,
-            phase: 'dealerTurn',
+            roundResults: results,
+            phase: 'finished',
           });
         }
       },
@@ -266,27 +289,6 @@ export const useGameStore = create<GameState>()(
           shoe: shoe2,
           playerHands: newHands,
           activeHandIndex: activeHandIndex + 1,
-        });
-      },
-
-      endDealerTurn: () => {
-        const { shoe, playerHands, dealerHand, balance } = get();
-
-        // Run dealer play
-        const { hand: finalDealerHand, remainingShoe } = dealerPlay(dealerHand, shoe);
-
-        // Calculate results
-        const results = calculateResults(playerHands, finalDealerHand);
-
-        // Apply payouts
-        const newBalance = applyPayouts(balance, results, playerHands);
-
-        set({
-          shoe: remainingShoe,
-          dealerHand: finalDealerHand,
-          roundResults: results,
-          balance: newBalance,
-          phase: 'finished',
         });
       },
 

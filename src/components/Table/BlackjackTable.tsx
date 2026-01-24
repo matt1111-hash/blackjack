@@ -24,7 +24,6 @@ export function BlackjackTable() {
     stand,
     double,
     split,
-    endDealerTurn,
     newRound,
   } = useGameStore();
 
@@ -37,13 +36,6 @@ export function BlackjackTable() {
     playLose,
     playBlackjack,
   } = useGameSounds();
-
-  // Play sounds for phase transitions
-  useEffect(() => {
-    if (phase === 'dealerTurn') {
-      endDealerTurn();
-    }
-  }, [phase, endDealerTurn]);
 
   // Play result sounds when round finishes
   useEffect(() => {
@@ -128,6 +120,7 @@ export function BlackjackTable() {
             hands={playerHands}
             activeHandIndex={activeHandIndex}
             currentBet={currentBet}
+            balance={balance}
             onHit={handleHit}
             onStand={handleStand}
             onDouble={handleDouble}

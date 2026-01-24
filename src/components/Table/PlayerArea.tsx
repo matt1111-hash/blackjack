@@ -1,7 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Hand } from '../Card/Hand';
 import { ActionButtons } from '../UI/ActionButtons';
+import { ChipSelector } from '../UI/ChipSelector';
 import { AnimatedChipStack } from '../Chip/ChipAnimations';
+import { PlayerAvatar } from '../Avatar/PlayerAvatar';
 import type { Hand as HandType } from '../../types';
 import { calculateHandValue } from '../../logic/hand';
 import './PlayerArea.css';
@@ -10,6 +12,7 @@ interface PlayerAreaProps {
   hands: HandType[];
   activeHandIndex: number;
   currentBet: number;
+  balance: number;
   onHit: () => void;
   onStand: () => void;
   onDouble?: () => void;
@@ -25,6 +28,7 @@ export function PlayerArea({
   hands,
   activeHandIndex,
   currentBet,
+  balance,
   onHit,
   onStand,
   onDouble,
@@ -39,8 +43,26 @@ export function PlayerArea({
   const isPlaying = gamePhase === 'playing';
   const isFinished = gamePhase === 'finished';
 
+  // Determine player mood based on game state
+  const getPlayerMood = (): 'neutral' | 'happy' | 'excited' | 'thinking' | 'sad' => {
+    if (isBetting) return 'neutral';
+    if (isFinished && roundResults) {
+      const hasWin = roundResults.some(r => ['win', 'blackjack'].includes(r.result));
+      const hasLoss = roundResults.some(r => r.result === 'lose');
+      if (hasWin) return 'excited';
+      if (hasLoss) return 'sad';
+    }
+    if (isPlaying) return 'thinking';
+    return 'neutral';
+  };
+
   return (
     <div className="player-area">
+      <div className="player-area__avatar">
+        <PlayerAvatar mood={getPlayerMood()} size={56} />
+        <div className="player-area__balance">${balance}</div>
+      </div>
+
       {isBetting && onPlaceBet && (
         <div className="player-area__betting">
           <div className="player-area__bet-label">YOUR BET</div>
@@ -115,11 +137,11 @@ export function PlayerArea({
                     <ActionButtons
                       onHit={onHit}
                       onStand={onStand}
-                      onDouble={hand.cards.length === 2 && canDouble ? onDouble : undefined}
-                      onSplit={hand.cards.length === 2 && canSplit ? onSplit : undefined}
+                      onDouble={onDouble}
+                      onSplit={onSplit}
                       disabled={isBusted || isStanding}
-                      canDouble={canDouble && hand.cards.length === 2}
-                      canSplit={canSplit && hand.cards.length === 2}
+                      canDouble={canDouble}
+                      canSplit={canSplit}
                     />
                   </motion.div>
                 )}
@@ -131,12 +153,15 @@ export function PlayerArea({
 
       {hands.length === 0 && isBetting && onPlaceBet && (
         <motion.div
-          className="player-area__empty"
+          className="player-area__betting-section"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          PLACE YOUR BET TO START
+          <div className="player-area__empty">
+            PLACE YOUR BET TO START
+          </div>
+          <ChipSelector onPlaceBet={onPlaceBet} balance={balance} />
         </motion.div>
       )}
     </div>

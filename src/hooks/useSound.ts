@@ -15,16 +15,16 @@ export type SoundType =
 
 // Sound configuration
 const SOUND_CONFIG: Record<SoundType, string> = {
-  cardPlace: '/sounds/card-place.mp3',
-  cardSlide: '/sounds/card-slide.mp3',
-  chipDrop: '/sounds/chip-drop.mp3',
-  chipStack: '/sounds/chip-stack.mp3',
-  chipWin: '/sounds/chip-win.mp3',
-  win: '/sounds/win.mp3',
-  lose: '/sounds/lose.mp3',
-  blackjack: '/sounds/blackjack.mp3',
-  dealStart: '/sounds/deal-start.mp3',
-  buttonClick: '/sounds/button-click.mp3',
+  cardPlace: '/sounds/card-place.ogg',
+  cardSlide: '/sounds/card-slide.ogg',
+  chipDrop: '/sounds/chip-drop.ogg',
+  chipStack: '/sounds/chip-stack.ogg',
+  chipWin: '/sounds/chip-win.ogg',
+  win: '/sounds/win.ogg',
+  lose: '/sounds/lose.ogg',
+  blackjack: '/sounds/blackjack.ogg',
+  dealStart: '/sounds/deal-start.ogg',
+  buttonClick: '/sounds/button-click.ogg',
 };
 
 interface SoundState {
@@ -58,9 +58,10 @@ function createSoundManager(): SoundManager {
     const sound = new Howl({
       src: [src],
       volume: masterVolume,
-      preload: false,
-      onloaderror: () => {
-        console.warn(`Failed to load sound: ${type}`);
+      preload: true,
+      html5: false,
+      onloaderror: (_id, error) => {
+        console.warn(`Failed to load sound: ${type}`, error);
       },
       onplayerror: () => {
         sound.once('unlock', () => {
@@ -80,7 +81,9 @@ function createSoundManager(): SoundManager {
       const sound = loadSound(type);
       if (sound) {
         sound.volume(masterVolume);
-        sound.play();
+        if (!sound.playing()) {
+          sound.play();
+        }
       }
     },
     preload: async (types?: SoundType[]) => {

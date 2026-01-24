@@ -45,9 +45,14 @@ export function GameResult({ results, hands }: GameResultProps) {
             >
               {RESULT_LABELS[result.result]}
             </div>
-            {result.result !== 'lose' && result.result !== 'push' && (
+            {result.result !== 'lose' && result.payout > 0 && (
               <div className="game-result__payout">
                 +${Math.floor(hands[result.playerHandIndex].bet * result.payout)}
+              </div>
+            )}
+            {result.result === 'push' && (
+              <div className="game-result__payout">
+                ${Math.floor(hands[result.playerHandIndex].bet)}
               </div>
             )}
           </motion.div>

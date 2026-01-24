@@ -1,15 +1,15 @@
 .card {
-  width: 80px;
-  height: 112px;
+  width: 56px;
+  height: 78px;
   background-color: white;
-  border-radius: 6px;
+  border-radius: 4px;
   box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.2),
     0 4px 8px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 6px;
+  padding: 4px;
   box-sizing: border-box;
   user-select: none;
   position: relative;
@@ -18,7 +18,7 @@
 
 .card--back {
   background: linear-gradient(135deg, #1e3a5f 0%, #0f2744 100%);
-  border: 2px solid #2d4a6f;
+  border: 1px solid #2d4a6f;
 }
 
 .card__pattern {
@@ -27,9 +27,9 @@
   background-image: repeating-linear-gradient(
     45deg,
     transparent,
-    transparent 4px,
-    rgba(255, 255, 255, 0.03) 4px,
-    rgba(255, 255, 255, 0.03) 8px
+    transparent 3px,
+    rgba(255, 255, 255, 0.03) 3px,
+    rgba(255, 255, 255, 0.03) 6px
   );
 }
 
@@ -42,25 +42,25 @@
 }
 
 .card__corner--top {
-  top: 4px;
-  left: 4px;
+  top: 3px;
+  left: 3px;
 }
 
 .card__corner--bottom {
-  bottom: 4px;
-  right: 4px;
+  bottom: 3px;
+  right: 3px;
   transform: rotate(180deg);
 }
 
 .card__rank {
-  font-size: 14px;
+  font-size: 10px;
   font-weight: 600;
   color: #1f2937;
 }
 
 .card__suit {
-  font-size: 12px;
-  margin-top: 1px;
+  font-size: 8px;
+  margin-top: 0px;
 }
 
 .card__center {
@@ -68,6 +68,6 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 36px;
+  font-size: 24px;
   opacity: 0.9;
 }

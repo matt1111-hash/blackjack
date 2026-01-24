@@ -1,0 +1,37 @@
+.dealer-avatar,
+.player-avatar {
+  transition: transform 0.3s ease;
+}
+
+.dealer-avatar:hover,
+.player-avatar:hover {
+  transform: scale(1.05);
+}
+
+@keyframes avatarPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+@keyframes avatarShake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+
+@keyframes avatarBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.player-avatar--excited {
+  animation: avatarBounce 0.5s ease-in-out;
+}
+
+.player-avatar--sad {
+  animation: avatarShake 0.3s ease-in-out;
+}
+
+.dealer-avatar--dealing {
+  animation: avatarPulse 0.3s ease-in-out;
+}
