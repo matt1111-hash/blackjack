@@ -3,19 +3,23 @@ import type { Card as CardType } from '../../types';
 import { Card } from './Card';
 import './CardAnimations.css';
 
-// Card dealing animation variants - internal only
+// Card dealing animation variants - 3D enhanced
 const cardDealVariants = {
   initial: {
     x: 200,
-    y: -100,
+    y: -150,
+    z: 100,
     rotate: -15,
+    rotateX: 10,
     opacity: 0,
     scale: 0.8,
   },
   dealing: {
     x: 0,
     y: 0,
+    z: 0,
     rotate: 0,
+    rotateX: 0,
     opacity: 1,
     scale: 1,
     transition: {
@@ -27,7 +31,9 @@ const cardDealVariants = {
   instant: {
     x: 0,
     y: 0,
+    z: 0,
     rotate: 0,
+    rotateX: 0,
     opacity: 1,
     scale: 1,
   },
@@ -85,6 +91,7 @@ export function CardAnimation({
         initial="hidden"
         animate="revealed"
         transition={{ delay: 0.5 }}
+        style={{ transformStyle: 'preserve-3d' }}
       >
         <Card card={card} />
       </motion.div>
@@ -98,6 +105,7 @@ export function CardAnimation({
       initial="initial"
       animate={dealing ? 'dealing' : 'instant'}
       transition={{ delay, type: 'spring', stiffness: 400, damping: 25 }}
+      style={{ transformStyle: 'preserve-3d' }}
     >
       {dealing ? (
         <CardFlipAnimation card={card} />
@@ -115,6 +123,7 @@ function CardFlipAnimation({ card }: { card: CardType }) {
       className="card-flip-container"
       variants={cardFlipVariants}
       animate={card.faceUp ? 'faceUp' : 'faceDown'}
+      style={{ transformStyle: 'preserve-3d' }}
     >
       <div className="card-flip-inner">
         <div className="card-flip-front">

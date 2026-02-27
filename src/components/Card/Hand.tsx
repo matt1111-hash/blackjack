@@ -24,7 +24,7 @@ export function Hand({ cards, className = '', showBack = false, spread = false }
             <motion.div
               key={`${card.suit}-${card.rank}-${index}`}
               className="hand__card-wrapper"
-              style={{ left: index * offset }}
+              style={{ left: index * offset, transformStyle: 'preserve-3d' }}
               initial={{ x: -100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: index * 0.1 }}
@@ -38,7 +38,7 @@ export function Hand({ cards, className = '', showBack = false, spread = false }
           <motion.div
             key={`${card.suit}-${card.rank}-${index}`}
             className="hand__card-wrapper"
-            style={{ left: index * offset }}
+            style={{ left: index * offset, transformStyle: 'preserve-3d' }}
             initial={{ x: -100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: index * 0.1 }}

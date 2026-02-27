@@ -4,9 +4,11 @@
   align-items: center;
   min-width: 100px;
   min-height: 120px;
+  transform-style: preserve-3d;
 }
 
 .hand__card-wrapper {
   position: absolute;
   transition: transform 0.2s ease-out;
+  transform-style: preserve-3d;
 }
