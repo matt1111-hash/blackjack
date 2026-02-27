@@ -6,14 +6,18 @@
   padding: 8px;
   min-width: 120px;
   position: relative;
+  transform-style: preserve-3d;
 }
 
+/* Counter-rotate HUD elements for readability */
 .dealer-area__label {
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 1px;
   color: rgba(255, 255, 255, 0.6);
   text-transform: uppercase;
+  transform: rotateX(-28deg) translateZ(10px);
+  backface-visibility: hidden;
 }
 
 .dealer-area__value {
@@ -25,6 +29,14 @@
   border-radius: 12px;
   min-width: 24px;
   text-align: center;
+  transform: rotateX(-28deg) translateZ(10px);
+  backface-visibility: hidden;
+}
+
+/* Counter-rotate avatar */
+.dealer-area .dealer-avatar {
+  transform: rotateX(-28deg) translateZ(15px);
+  backface-visibility: hidden;
 }
 
 /* Dealer avatar glow effect */

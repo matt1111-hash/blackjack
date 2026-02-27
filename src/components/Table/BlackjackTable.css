@@ -47,6 +47,9 @@
   align-items: center;
   padding: 8px 24px;
   flex-shrink: 0;
+  transform-style: preserve-3d;
+  transform: rotateX(-28deg) translateZ(20px);
+  backface-visibility: hidden;
 }
 
 .blackjack-table__title {
@@ -87,8 +90,9 @@
   position: absolute;
   bottom: 16px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) rotateX(-28deg) translateZ(30px);
   z-index: 150;
+  transform-style: preserve-3d;
 }
 
 .deal-button {
@@ -126,6 +130,8 @@
   align-items: center;
   gap: 2px;
   opacity: 0.6;
+  transform-style: preserve-3d;
+  transform: rotateX(-28deg) translateZ(15px);
 }
 
 .shoe__label {
