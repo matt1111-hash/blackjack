@@ -90,16 +90,16 @@ export function calculateResults(
       payout = 0;
     } else if (dealerBusted) {
       result = 'win';
-      payout = hand.isDoubled ? 1 : 0.5; // Double down doubles the payout
+      payout = hand.isDoubled ? 2 : 1; // 1:1 profit, doubled if double down
     } else if (playerBJ && !dealerBJ) {
       result = 'blackjack';
-      payout = 0.75; // 3:2 profit = 75% of bet
+      payout = 1.5; // 3:2 profit = 150% of bet
     } else if (dealerBJ && !playerBJ) {
       result = 'lose';
       payout = 0;
     } else if (playerValue > dealerValue) {
       result = 'win';
-      payout = hand.isDoubled ? 1 : 0.5; // Double down doubles the payout
+      payout = hand.isDoubled ? 2 : 1; // 1:1 profit, doubled if double down
     } else if (playerValue < dealerValue) {
       result = 'lose';
       payout = 0;
