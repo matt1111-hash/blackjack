@@ -110,13 +110,24 @@ export const useGameStore = create<GameState>()(
         const dealerBJ = isBlackjack(dealerHand.cards);
 
         let newPhase: GamePhase = 'playing';
+        let results: RoundResult[] | null = null;
+        let newBalance = balance;
 
         if (playerBJ && !dealerBJ) {
           newPhase = 'finished';
+          dealerHand.cards[1].faceUp = true;
+          results = calculateResults([playerHand], dealerHand);
+          newBalance = applyPayouts(balance, results, [playerHand]);
         } else if (dealerBJ && !playerBJ) {
           newPhase = 'finished';
+          dealerHand.cards[1].faceUp = true;
+          results = calculateResults([playerHand], dealerHand);
+          newBalance = applyPayouts(balance, results, [playerHand]);
         } else if (playerBJ && dealerBJ) {
           newPhase = 'finished';
+          dealerHand.cards[1].faceUp = true;
+          results = calculateResults([playerHand], dealerHand);
+          newBalance = applyPayouts(balance, results, [playerHand]);
         }
 
         set({
@@ -126,7 +137,8 @@ export const useGameStore = create<GameState>()(
           dealerHand,
           activeHandIndex: 0,
           phase: newPhase,
-          roundResults: null,
+          roundResults: results,
+          balance: newBalance,
         });
       },
 

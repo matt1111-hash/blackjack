@@ -102,7 +102,7 @@ describe('calculateResults', () => {
     const results = calculateResults([playerHand], dealerHand);
 
     expect(results[0].result).toBe('win');
-    expect(results[0].payout).toBe(0.5);
+    expect(results[0].payout).toBe(1); // 1:1 = 100% profit
   });
 
   it('should return lose when dealer has higher value', () => {
@@ -151,7 +151,7 @@ describe('calculateResults', () => {
     const results = calculateResults([playerHand], dealerHand);
 
     expect(results[0].result).toBe('blackjack');
-    expect(results[0].payout).toBe(0.75);
+    expect(results[0].payout).toBe(1.5); // 3:2 = 150% profit
   });
 
   it('should handle dealer blackjack vs player non-blackjack', () => {
@@ -184,7 +184,7 @@ describe('calculateResults', () => {
     const results = calculateResults([playerHand], dealerHand);
 
     expect(results[0].result).toBe('win');
-    expect(results[0].payout).toBe(1);
+    expect(results[0].payout).toBe(2); // Double down = 2x profit
   });
 
   it('should handle busted player hand', () => {
@@ -222,22 +222,22 @@ describe('applyPayouts', () => {
   it('should add winnings to balance', () => {
     const balance = 1000;
     const hands = [createTestHand([createTestCard('hearts', 'K'), createTestCard('spades', '9')], 100)];
-    const results = [{ playerHandIndex: 0, result: 'win' as const, payout: 0.5 }];
+    const results = [{ playerHandIndex: 0, result: 'win' as const, payout: 1 }];
 
     const newBalance = applyPayouts(balance, results, hands);
 
-    expect(newBalance).toBe(1050);
+    expect(newBalance).toBe(1100); // 1000 + 100 profit
   });
 
   it('should handle blackjack payout (3:2)', () => {
     const balance = 1000;
     const hands = [createTestHand([createTestCard('hearts', 'A'), createTestCard('spades', 'K')], 100)];
     hands[0].isBlackjack = true;
-    const results = [{ playerHandIndex: 0, result: 'blackjack' as const, payout: 0.75 }];
+    const results = [{ playerHandIndex: 0, result: 'blackjack' as const, payout: 1.5 }];
 
     const newBalance = applyPayouts(balance, results, hands);
 
-    expect(newBalance).toBe(1075);
+    expect(newBalance).toBe(1150); // 1000 + 150 profit (3:2)
   });
 
   it('should return bet on push', () => {

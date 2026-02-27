@@ -90,16 +90,16 @@ export function calculateResults(
       payout = 0;
     } else if (dealerBusted) {
       result = 'win';
-      payout = 1; // 1:1 profit
+      payout = hand.isDoubled ? 2 : 1; // 1:1 profit, doubled if double down
     } else if (playerBJ && !dealerBJ) {
       result = 'blackjack';
-      payout = 1.5; // 3:2 profit
+      payout = 1.5; // 3:2 profit = 150% of bet
     } else if (dealerBJ && !playerBJ) {
       result = 'lose';
       payout = 0;
     } else if (playerValue > dealerValue) {
       result = 'win';
-      payout = 1; // 1:1 profit
+      payout = hand.isDoubled ? 2 : 1; // 1:1 profit, doubled if double down
     } else if (playerValue < dealerValue) {
       result = 'lose';
       payout = 0;
@@ -124,24 +124,13 @@ export function applyPayouts(
     const hand = hands[roundResult.playerHandIndex];
     const bet = hand.bet;
 
-    // Payout calculation: bet is already deducted from balance at bet placement
-    // We need to return bet + profit for wins/pushes
-    switch (roundResult.result) {
-      case 'blackjack':
-        // Return bet + 1.5x profit (3:2 payout)
-        balance += Math.floor(bet * 2.5);
-        break;
-      case 'win':
-        // Return bet + 1x profit (1:1 payout)
-        balance += bet * 2;
-        break;
-      case 'push':
-        // Return bet only (no profit, no loss)
-        balance += bet;
-        break;
-      case 'lose':
-        // Bet already deducted, nothing to return
-        break;
+    // Payout calculation:
+    // payout represents profit as a fraction of bet (0.5 = 50% profit, 0.75 = 75% for blackjack)
+    // For wins: add profit only (bet is returned via game store)
+    // For push: payout = 0, bet is returned via game store
+    // For lose: nothing added (bet is lost)
+    if (roundResult.result !== 'lose') {
+      balance += Math.floor(bet * roundResult.payout);
     }
   }
 

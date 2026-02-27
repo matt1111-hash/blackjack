@@ -1,8 +1,12 @@
+/* Counter-rotate action buttons for 3D table */
 .action-buttons {
   display: flex;
   gap: 12px;
   justify-content: center;
   flex-wrap: wrap;
+  transform: rotateX(-28deg) translateZ(20px);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
 }
 
 .action-btn {

@@ -4,6 +4,7 @@
   padding: 0;
   cursor: pointer;
   transition: transform 0.15s ease;
+  transform-style: preserve-3d;
 }
 
 .chip-button:disabled {
@@ -15,9 +16,11 @@
   position: relative;
   width: 60px;
   height: 60px;
+  transform-style: preserve-3d;
 }
 
 .chip-stack-item {
   position: absolute;
   inset: 0;
+  transform-style: preserve-3d;
 }

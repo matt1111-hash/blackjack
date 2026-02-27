@@ -1,8 +1,12 @@
+/* Counter-rotate chip selector for 3D table */
 .chip-selector {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
+  transform: rotateX(-28deg) translateZ(20px);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
 }
 
 .chip-selector__chips {

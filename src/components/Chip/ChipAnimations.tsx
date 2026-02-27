@@ -4,18 +4,18 @@ import { CHIP_COLORS } from '../../types';
 import { Chip } from './Chip';
 import './ChipAnimations.css';
 
-// Chip placement animation variants - internal only
+// Chip placement animation variants - 3D enhanced
 const chipPlaceVariants = {
   initial: {
     y: -200,
-    x: 0,
+    z: 80,
     scale: 0.5,
     opacity: 0,
     rotate: -30,
   },
   placed: {
     y: 0,
-    x: 0,
+    z: 0,
     scale: 1,
     opacity: 1,
     rotate: 0,
@@ -27,15 +27,17 @@ const chipPlaceVariants = {
   },
 };
 
-// Chip stack animation - internal only
+// Chip stack animation - 3D enhanced
 const chipStackVariants = {
   hidden: {
     y: -30,
+    z: 20,
     opacity: 0,
     scale: 0.8,
   },
   visible: (index: number) => ({
     y: 0,
+    z: 0,
     opacity: 1,
     scale: 1,
     transition: {
@@ -47,15 +49,17 @@ const chipStackVariants = {
   }),
 };
 
-// Winning chip motion - internal only
+// Winning chip motion - 3D enhanced
 const winChipVariants = {
   initial: {
     scale: 1,
     y: 0,
+    z: 0,
   },
   win: {
     scale: [1, 1.2, 1],
     y: [0, -20, 0],
+    z: [0, 30, 0],
     transition: {
       duration: 0.5,
       ease: 'easeInOut',
@@ -93,12 +97,12 @@ export function ChipButton({ value, onClick, disabled }: ChipButtonProps) {
       className="chip-button"
       onClick={onClick}
       disabled={disabled}
-      whileHover={!disabled ? { scale: 1.15, y: -5 } : undefined}
+      whileHover={!disabled ? { scale: 1.15, y: -5, z: 10 } : undefined}
       whileTap={!disabled ? { scale: 0.9 } : undefined}
       initial="initial"
       animate="placed"
       variants={chipPlaceVariants}
-      style={{ '--chip-color': color } as React.CSSProperties}
+      style={{ '--chip-color': color, transformStyle: 'preserve-3d' } as React.CSSProperties}
     >
       <Chip value={value} />
     </motion.button>
@@ -121,7 +125,7 @@ export function AnimatedChipStack({
   const offset = vertical ? 4 : 6;
 
   return (
-    <div className="animated-chip-stack">
+    <div className="animated-chip-stack" style={{ transformStyle: 'preserve-3d' } as React.CSSProperties}>
       {chips.map((chip, index) => {
         const animate = animateWin ? 'win' : animateLose ? 'lose' : undefined;
 
@@ -129,7 +133,7 @@ export function AnimatedChipStack({
           <motion.div
             key={chip.id}
             className="chip-stack-item"
-            style={{ [vertical ? 'bottom' : 'right']: index * offset }}
+            style={{ [vertical ? 'bottom' : 'right']: index * offset, transformStyle: 'preserve-3d' } as React.CSSProperties}
             custom={index}
             variants={chipStackVariants}
             initial="hidden"
@@ -138,6 +142,7 @@ export function AnimatedChipStack({
             <motion.div
               variants={animateWin ? winChipVariants : animateLose ? loseChipVariants : undefined}
               animate={animate}
+              style={{ transformStyle: 'preserve-3d' }}
             >
               <Chip value={chip.value} />
             </motion.div>
