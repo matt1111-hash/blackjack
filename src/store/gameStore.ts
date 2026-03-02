@@ -45,7 +45,11 @@ export const useGameStore = create<GameState>()(
 
         let newPhase: GamePhase = 'playing';
 
-        if (playerBJ && !dealerBJ) {
+        // Check for insurance if dealer shows Ace and player doesn't have Blackjack
+        // (If player has BJ, they can't buy insurance, they just get paid 1:1 or push - for simplicity we just skip insurance phase)
+        if (dealerHand.cards[0]?.rank === 'A' && balance >= currentBet / 2) {
+          newPhase = 'insurance';
+        } else if (playerBJ && !dealerBJ) {
           newPhase = 'finished';
         } else if (dealerBJ && !playerBJ) {
           newPhase = 'finished';
@@ -62,6 +66,51 @@ export const useGameStore = create<GameState>()(
           phase: newPhase,
           roundResults: null,
         });
+      },
+
+      buyInsurance: () => {
+        const { balance, currentBet, dealerHand, shoe, playerHands } = get();
+        const insuranceCost = currentBet / 2;
+
+        if (balance < insuranceCost) return;
+
+        const newBalance = balance - insuranceCost;
+        const dealerBJ = isBlackjack(dealerHand.cards);
+
+        if (dealerBJ) {
+          // Dealer has BJ: Insurance pays 2:1, so player gets back insuranceCost + 2 * insuranceCost
+          // Meaning their balance increases by 2 * insuranceCost from current newBalance.
+          // In effect, they lose their main bet but win the insurance bet.
+          const finalBalance = newBalance + insuranceCost * 3;
+          // Main hand loses, so we resolve round
+          const finalState = handleAllHandsDone(dealerHand, shoe, playerHands, finalBalance);
+          set(finalState);
+        } else {
+          // Dealer no BJ: Insurance bet is lost, continue to playing phase
+          const playerBJ = playerHands[0]?.isBlackjack;
+          if (playerBJ) {
+             const finalState = handleAllHandsDone(dealerHand, shoe, playerHands, newBalance);
+             set(finalState);
+          } else {
+             set({
+               balance: newBalance,
+               phase: 'playing',
+             });
+          }
+        }
+      },
+
+      declineInsurance: () => {
+        const { dealerHand, shoe, playerHands, balance } = get();
+        const dealerBJ = isBlackjack(dealerHand.cards);
+        const playerBJ = playerHands[0]?.isBlackjack;
+
+        if (dealerBJ || playerBJ) {
+          const finalState = handleAllHandsDone(dealerHand, shoe, playerHands, balance);
+          set(finalState);
+        } else {
+          set({ phase: 'playing' });
+        }
       },
 
       hit: () => {

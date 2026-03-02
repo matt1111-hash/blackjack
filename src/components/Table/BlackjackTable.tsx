@@ -6,6 +6,7 @@ import { PlayerArea } from './PlayerArea';
 import { Balance } from '../UI/Balance';
 import { GameResult } from '../UI/GameResult';
 import { SoundSettings } from '../UI/SoundSettings';
+import { InsuranceDialog } from '../UI/InsuranceDialog';
 import type { ChipValue } from '../../types';
 import './BlackjackTable.css';
 
@@ -24,6 +25,8 @@ export function BlackjackTable() {
     stand,
     double,
     split,
+    buyInsurance,
+    declineInsurance,
     newRound,
   } = useGameStore();
 
@@ -93,6 +96,17 @@ export function BlackjackTable() {
     split?.();
   };
 
+  const handleBuyInsurance = () => {
+    playChipDrop();
+    playButtonClick();
+    buyInsurance();
+  };
+
+  const handleDeclineInsurance = () => {
+    playButtonClick();
+    declineInsurance();
+  };
+
   return (
     <div className="blackjack-table">
       <div className="blackjack-table__felt">
@@ -140,6 +154,15 @@ export function BlackjackTable() {
               DEAL
             </button>
           </div>
+        )}
+
+        {/* Insurance Dialog */}
+        {phase === 'insurance' && (
+          <InsuranceDialog
+            onBuy={handleBuyInsurance}
+            onDecline={handleDeclineInsurance}
+            insuranceCost={Math.floor(currentBet / 2)}
+          />
         )}
 
         {/* New Round button when finished */}

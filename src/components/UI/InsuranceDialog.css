@@ -1,0 +1,85 @@
+.insurance-dialog {
+  /* No custom classes needed, tailwind handles it via @tailwind utilities */
+  /* Fallbacks for older tailwind setups without v4 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background-color: rgba(17, 24, 39, 0.95);
+  border: 2px solid #eab308;
+  border-radius: 1rem;
+  box-shadow: 0 0 30px rgba(234, 179, 8, 0.3);
+  z-index: 50;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+}
+
+.insurance-dialog__icon {
+  color: #eab308;
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.insurance-dialog h2 {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+.insurance-dialog p {
+  color: #d1d5db;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  max-width: 20rem;
+}
+
+.insurance-dialog strong {
+  color: #facc15;
+}
+
+.insurance-dialog__actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.insurance-dialog__btn-buy {
+  padding: 0.75rem 1.5rem;
+  background-color: #eab308;
+  color: #713f12;
+  font-weight: 700;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+}
+
+.insurance-dialog__btn-buy:hover {
+  background-color: #facc15;
+  box-shadow: 0 0 15px rgba(234, 179, 8, 0.5);
+}
+
+.insurance-dialog__btn-decline {
+  padding: 0.75rem 1.5rem;
+  background-color: #374151;
+  color: white;
+  font-weight: 700;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+}
+
+.insurance-dialog__btn-decline:hover {
+  background-color: #4b5563;
+}
