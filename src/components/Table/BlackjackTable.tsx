@@ -40,9 +40,16 @@ export function BlackjackTable() {
   // Play result sounds when round finishes
   useEffect(() => {
     if (phase === 'finished' && roundResults) {
-      const hasWin = roundResults.some((r) => r.result === 'win' || r.result === 'blackjack');
-      const hasLose = roundResults.every((r) => r.result === 'lose');
-      const hasBlackjack = roundResults.some((r) => r.result === 'blackjack');
+      let hasWin = false;
+      let hasLose = true;
+      let hasBlackjack = false;
+
+      for (let i = 0; i < roundResults.length; i++) {
+        const result = roundResults[i].result;
+        if (result === 'win' || result === 'blackjack') hasWin = true;
+        if (result !== 'lose') hasLose = false;
+        if (result === 'blackjack') hasBlackjack = true;
+      }
 
       if (hasBlackjack) {
         setTimeout(playBlackjack, 500);
