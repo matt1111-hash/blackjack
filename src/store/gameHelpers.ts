@@ -41,6 +41,8 @@ export interface GameState {
   stand: () => void;
   double: () => void;
   split: () => void;
+  buyInsurance: () => void;
+  declineInsurance: () => void;
   newRound: () => void;
   resetBalance: () => void;
 }

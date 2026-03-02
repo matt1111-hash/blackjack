@@ -21,7 +21,7 @@ export interface Hand {
 export type HandResult = 'win' | 'lose' | 'push' | 'blackjack';
 
 // Game Types
-export type GamePhase = 'betting' | 'dealing' | 'playing' | 'dealerTurn' | 'finished';
+export type GamePhase = 'betting' | 'dealing' | 'insurance' | 'playing' | 'dealerTurn' | 'finished';
 
 // Chip Types
 export type ChipValue = 1 | 5 | 25 | 100 | 500;
