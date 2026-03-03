@@ -60,7 +60,7 @@ function createSoundManager(): SoundManager {
       volume: masterVolume,
       preload: true,
       html5: false,
-      onloaderror: (_id, error) => {
+      onloaderror: (_id: number, error: unknown) => {
         console.warn(`Failed to load sound: ${type}`, error);
       },
       onplayerror: () => {

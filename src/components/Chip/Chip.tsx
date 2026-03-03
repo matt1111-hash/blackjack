@@ -26,14 +26,8 @@ export function Chip({ value, className = '', onClick, selected }: ChipProps) {
       <div className="chip__top">
         <span className="chip__value">${value}</span>
         <div className="chip__decorations">
-          {[0, 72, 144, 216, 288].map((rotation) => (
-            <span
-              key={rotation}
-              className="chip__decoration"
-              style={{ transform: `rotate(${rotation}deg)` }}
-            >
-              •
-            </span>
+          {[0, 1, 2, 3, 4, 5, 6, 7].map((index) => (
+            <span key={index} className="chip__decoration" />
           ))}
         </div>
       </div>

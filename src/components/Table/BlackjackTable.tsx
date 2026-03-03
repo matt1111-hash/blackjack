@@ -95,7 +95,13 @@ export function BlackjackTable() {
 
   return (
     <div className="blackjack-table">
-      <div className="blackjack-table__felt">
+      {/* 3D Background Layer - Visual only, no interactive elements */}
+      <div className="blackjack-table__felt-3d" aria-hidden="true">
+        <div className="blackjack-table__center-line-3d" />
+      </div>
+
+      {/* 2D Overlay Layer - All interactive elements */}
+      <div className="blackjack-table__overlay">
         {/* Header with balance and sound settings */}
         <div className="blackjack-table__header">
           <Balance balance={balance} />
@@ -110,9 +116,6 @@ export function BlackjackTable() {
             showHoleCard={phase === 'finished'}
           />
         </div>
-
-        {/* Center line */}
-        <div className="blackjack-table__center-line" />
 
         {/* Player area */}
         <div className="blackjack-table__player">

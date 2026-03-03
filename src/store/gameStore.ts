@@ -245,6 +245,7 @@ export const useGameStore = create<GameState>()(
           });
         } else {
           // All hands done - run dealer turn directly
+          const { dealerHand } = get();
           const { hand: finalDealerHand, remainingShoe: finalShoe } = dealerPlay(dealerHand, remainingShoe);
           const results = calculateResults(newHands, finalDealerHand);
           const newBalance = applyPayouts(balance - hand.bet, results, newHands);
@@ -296,11 +297,13 @@ export const useGameStore = create<GameState>()(
           ...playerHands.slice(activeHandIndex + 1),
         ];
 
+        // After split, start with the first new hand (index stays the same)
+        // This allows the player to play both hands sequentially
         set({
           balance: balance - hand.bet,
           shoe: shoe2,
           playerHands: newHands,
-          activeHandIndex: activeHandIndex + 1,
+          activeHandIndex: activeHandIndex, // Stay on first hand after split
         });
       },
 

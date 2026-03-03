@@ -4,7 +4,7 @@ import { ActionButtons } from '../UI/ActionButtons';
 import { ChipSelector } from '../UI/ChipSelector';
 import { AnimatedChipStack } from '../Chip/ChipAnimations';
 import { PlayerAvatar } from '../Avatar/PlayerAvatar';
-import type { Hand as HandType } from '../../types';
+import type { Hand as HandType, ChipValue } from '../../types';
 import { calculateHandValue } from '../../logic/hand';
 import './PlayerArea.css';
 
@@ -17,7 +17,7 @@ interface PlayerAreaProps {
   onStand: () => void;
   onDouble?: () => void;
   onSplit?: () => void;
-  onPlaceBet?: (amount: number) => void;
+  onPlaceBet?: (amount: ChipValue) => void;
   gamePhase: string;
   canDouble?: boolean;
   canSplit?: boolean;

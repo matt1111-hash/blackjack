@@ -184,7 +184,7 @@ describe('calculateResults', () => {
     const results = calculateResults([playerHand], dealerHand);
 
     expect(results[0].result).toBe('win');
-    expect(results[0].payout).toBe(2); // Double down = 2x profit
+    expect(results[0].payout).toBe(1); // 1:1 profit (bet is already doubled in hand.bet)
   });
 
   it('should handle busted player hand', () => {
@@ -226,7 +226,7 @@ describe('applyPayouts', () => {
 
     const newBalance = applyPayouts(balance, results, hands);
 
-    expect(newBalance).toBe(1100); // 1000 + 100 profit
+    expect(newBalance).toBe(1200); // 1000 + bet(100) + profit(100) = 1200
   });
 
   it('should handle blackjack payout (3:2)', () => {
@@ -237,7 +237,7 @@ describe('applyPayouts', () => {
 
     const newBalance = applyPayouts(balance, results, hands);
 
-    expect(newBalance).toBe(1150); // 1000 + 150 profit (3:2)
+    expect(newBalance).toBe(1250); // 1000 + bet(100) + profit(150) = 1250
   });
 
   it('should return bet on push', () => {
@@ -247,7 +247,7 @@ describe('applyPayouts', () => {
 
     const newBalance = applyPayouts(balance, results, hands);
 
-    expect(newBalance).toBe(1000);
+    expect(newBalance).toBe(1100); // 1000 + bet(100) returned = 1100
   });
 
   it('should handle loss (bet already deducted)', () => {

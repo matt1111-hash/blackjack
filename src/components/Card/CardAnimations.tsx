@@ -1,18 +1,18 @@
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import type { Card as CardType } from '../../types';
 import { Card } from './Card';
 import './CardAnimations.css';
 
 // Card dealing animation variants - 3D enhanced
-const cardDealVariants = {
+const cardDealVariants: Variants = {
   initial: {
-    x: 200,
-    y: -150,
-    z: 100,
-    rotate: -15,
-    rotateX: 10,
+    x: 250,
+    y: -180,
+    z: 200,
+    rotate: -20,
+    rotateX: 15,
     opacity: 0,
-    scale: 0.8,
+    scale: 0.7,
   },
   dealing: {
     x: 0,
@@ -23,8 +23,8 @@ const cardDealVariants = {
     opacity: 1,
     scale: 1,
     transition: {
-      type: 'spring',
-      stiffness: 400,
+      type: 'spring' as const,
+      stiffness: 350,
       damping: 25,
     },
   },
@@ -40,26 +40,26 @@ const cardDealVariants = {
 };
 
 // Card flip variants - internal only
-const cardFlipVariants = {
+const cardFlipVariants: Variants = {
   faceDown: {
     rotateY: 180,
-    transition: { duration: 0.4, ease: 'easeInOut' },
+    transition: { duration: 0.4, ease: 'easeInOut' as const },
   },
   faceUp: {
     rotateY: 0,
-    transition: { duration: 0.4, ease: 'easeInOut' },
+    transition: { duration: 0.4, ease: 'easeInOut' as const },
   },
 };
 
 // Hole card reveal animation - internal only
-const holeCardRevealVariants = {
+const holeCardRevealVariants: Variants = {
   hidden: {
     rotateY: 180,
     transition: { duration: 0 },
   },
   revealed: {
     rotateY: 0,
-    transition: { duration: 0.5, ease: 'easeOut' },
+    transition: { duration: 0.5, ease: 'easeOut' as const },
   },
 };
 

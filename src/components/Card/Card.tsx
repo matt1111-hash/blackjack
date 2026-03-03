@@ -37,9 +37,17 @@ const SUIT_COLORS: Record<string, string> = {
   spades: '#1f2937',
 };
 
+const SUIT_CLASS: Record<string, string> = {
+  hearts: 'red',
+  diamonds: 'red',
+  clubs: 'black',
+  spades: 'black',
+};
+
 export function Card({ card, className = '', style }: CardProps) {
   const suitSymbol = SUIT_SYMBOLS[card.suit];
   const suitColor = SUIT_COLORS[card.suit];
+  const suitClass = SUIT_CLASS[card.suit];
 
   if (!card.faceUp) {
     return (
@@ -53,14 +61,14 @@ export function Card({ card, className = '', style }: CardProps) {
     <div className={`card ${className}`} style={style}>
       <div className="card__corner card__corner--top">
         <span className="card__rank">{RANK_SYMBOLS[card.rank]}</span>
-        <span className="card__suit" style={{ color: suitColor }}>{suitSymbol}</span>
+        <span className={`card__suit ${suitClass}`} style={{ color: suitColor }}>{suitSymbol}</span>
       </div>
-      <div className="card__center" style={{ color: suitColor }}>
+      <div className={`card__center ${suitClass}`} style={{ color: suitColor }}>
         {suitSymbol}
       </div>
       <div className="card__corner card__corner--bottom">
         <span className="card__rank">{RANK_SYMBOLS[card.rank]}</span>
-        <span className="card__suit" style={{ color: suitColor }}>{suitSymbol}</span>
+        <span className={`card__suit ${suitClass}`} style={{ color: suitColor }}>{suitSymbol}</span>
       </div>
     </div>
   );

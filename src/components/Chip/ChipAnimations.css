@@ -15,7 +15,7 @@
 .animated-chip-stack {
   position: relative;
   width: 60px;
-  height: 60px;
+  height: 80px; /* Increased for stacked chips with new offset */
   transform-style: preserve-3d;
 }
 

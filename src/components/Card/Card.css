@@ -1,36 +1,112 @@
+/* Premium Playing Card */
 .card {
-  width: 56px;
-  height: 78px;
-  background-color: white;
-  border-radius: 4px;
+  width: 70px;
+  height: 100px;
+  /* Subtle off-white gradient for paper feel */
+  background: linear-gradient(
+    180deg,
+    #fefefe 0%,
+    #f8f8f8 50%,
+    #f5f5f5 100%
+  );
+  border-radius: 6px;
+  /* Multi-layer shadow for 3D depth */
   box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.2),
-    0 4px 8px rgba(0, 0, 0, 0.15);
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 4px 8px rgba(0, 0, 0, 0.1),
+    0 8px 16px rgba(0, 0, 0, 0.15),
+    0 12px 24px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 4px;
+  padding: 5px;
   box-sizing: border-box;
   user-select: none;
   position: relative;
   overflow: hidden;
+  /* Subtle border for definition */
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transform-style: preserve-3d;
 }
 
-.card--back {
-  background: linear-gradient(135deg, #1e3a5f 0%, #0f2744 100%);
-  border: 1px solid #2d4a6f;
-}
-
-.card__pattern {
+/* UV coating / semi-gloss effect */
+.card::after {
+  content: '';
   position: absolute;
   inset: 0;
-  background-image: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 3px,
-    rgba(255, 255, 255, 0.03) 3px,
-    rgba(255, 255, 255, 0.03) 6px
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.05) 30%,
+    transparent 60%
   );
+  pointer-events: none;
+  border-radius: 6px;
+}
+
+/* Card back - premium design */
+.card--back {
+  background: linear-gradient(
+    145deg,
+    #1e3a5f 0%,
+    #152a47 30%,
+    #0f2744 60%,
+    #1a3354 100%
+  );
+  border: 1px solid #2d4a6f;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.15),
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    0 8px 16px rgba(0, 0, 0, 0.2),
+    0 12px 24px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Back pattern - diamond lattice */
+.card__pattern {
+  position: absolute;
+  inset: 4px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-image:
+    /* Diagonal lines */
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 4px,
+      rgba(255, 255, 255, 0.03) 4px,
+      rgba(255, 255, 255, 0.03) 8px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 4px,
+      rgba(255, 255, 255, 0.03) 4px,
+      rgba(255, 255, 255, 0.03) 8px
+    );
+  overflow: hidden;
+}
+
+/* Inner decorative border for back */
+.card__pattern::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+
+/* Center ornament placeholder */
+.card__pattern::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30px;
+  height: 30px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
 }
 
 .card__corner {
@@ -39,28 +115,32 @@
   align-items: center;
   line-height: 1;
   position: absolute;
+  z-index: 1;
 }
 
 .card__corner--top {
-  top: 3px;
-  left: 3px;
+  top: 5px;
+  left: 5px;
 }
 
 .card__corner--bottom {
-  bottom: 3px;
-  right: 3px;
+  bottom: 5px;
+  right: 5px;
   transform: rotate(180deg);
 }
 
 .card__rank {
-  font-size: 10px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   color: #1f2937;
+  font-family: 'Georgia', serif;
+  line-height: 1;
 }
 
 .card__suit {
-  font-size: 8px;
-  margin-top: 0px;
+  font-size: 10px;
+  margin-top: 1px;
+  line-height: 1;
 }
 
 .card__center {
@@ -68,6 +148,21 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 24px;
-  opacity: 0.9;
+  font-size: 28px;
+  opacity: 0.85;
+  z-index: 1;
+}
+
+/* Red suits */
+.card__corner--top .card__suit.red,
+.card__corner--bottom .card__suit.red,
+.card__center.red {
+  color: #dc2626;
+}
+
+/* Black suits */
+.card__corner--top .card__suit.black,
+.card__corner--bottom .card__suit.black,
+.card__center.black {
+  color: #1f2937;
 }

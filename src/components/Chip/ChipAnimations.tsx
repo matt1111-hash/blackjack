@@ -1,14 +1,14 @@
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import type { ChipValue } from '../../types';
 import { CHIP_COLORS } from '../../types';
 import { Chip } from './Chip';
 import './ChipAnimations.css';
 
 // Chip placement animation variants - 3D enhanced
-const chipPlaceVariants = {
+const chipPlaceVariants: Variants = {
   initial: {
     y: -200,
-    z: 80,
+    z: 150,
     scale: 0.5,
     opacity: 0,
     rotate: -30,
@@ -20,7 +20,7 @@ const chipPlaceVariants = {
     opacity: 1,
     rotate: 0,
     transition: {
-      type: 'spring',
+      type: 'spring' as const,
       stiffness: 400,
       damping: 20,
     },
@@ -28,10 +28,10 @@ const chipPlaceVariants = {
 };
 
 // Chip stack animation - 3D enhanced
-const chipStackVariants = {
+const chipStackVariants: Variants = {
   hidden: {
     y: -30,
-    z: 20,
+    z: 50,
     opacity: 0,
     scale: 0.8,
   },
@@ -42,7 +42,7 @@ const chipStackVariants = {
     scale: 1,
     transition: {
       delay: index * 0.05,
-      type: 'spring',
+      type: 'spring' as const,
       stiffness: 300,
       damping: 15,
     },
@@ -50,7 +50,7 @@ const chipStackVariants = {
 };
 
 // Winning chip motion - 3D enhanced
-const winChipVariants = {
+const winChipVariants: Variants = {
   initial: {
     scale: 1,
     y: 0,
@@ -59,16 +59,16 @@ const winChipVariants = {
   win: {
     scale: [1, 1.2, 1],
     y: [0, -20, 0],
-    z: [0, 30, 0],
+    z: [0, 60, 0],
     transition: {
       duration: 0.5,
-      ease: 'easeInOut',
+      ease: 'easeInOut' as const,
     },
   },
 };
 
 // Losing chip motion - internal only
-const loseChipVariants = {
+const loseChipVariants: Variants = {
   initial: {
     scale: 1,
     opacity: 1,
@@ -122,7 +122,7 @@ export function AnimatedChipStack({
   animateWin = false,
   animateLose = false,
 }: AnimatedChipStackProps) {
-  const offset = vertical ? 4 : 6;
+  const offset = vertical ? 7 : 6; /* Increased for better 3D stack effect */
 
   return (
     <div className="animated-chip-stack" style={{ transformStyle: 'preserve-3d' } as React.CSSProperties}>

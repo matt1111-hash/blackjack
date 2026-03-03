@@ -1,12 +1,10 @@
-/* Counter-rotate chip selector for 3D table */
 .chip-selector {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  transform: rotateX(-28deg) translateZ(20px);
-  transform-style: preserve-3d;
-  backface-visibility: hidden;
+  gap: 14px;
+  position: relative;
+  z-index: 10;
 }
 
 .chip-selector__chips {
@@ -21,12 +19,14 @@
   border: none;
   padding: 0;
   cursor: pointer;
-  transition: filter 0.2s ease;
+  transition: filter 0.2s ease, transform 0.15s ease;
   position: relative;
+  z-index: 1;
 }
 
 .chip-selector__chip-btn:not(:disabled):hover {
   filter: brightness(1.2);
+  transform: translateY(-2px);
 }
 
 .chip-selector__chip-btn:disabled {

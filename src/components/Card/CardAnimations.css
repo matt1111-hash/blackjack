@@ -5,8 +5,8 @@
 
 .card-flip-container {
   perspective: 1000px;
-  width: 80px;
-  height: 112px;
+  width: 70px;
+  height: 100px;
   transform-style: preserve-3d;
 }
 

@@ -21,9 +21,10 @@ export function dealerPlay(dealerHand: Hand, shoe: Card[]): { hand: Hand; remain
   let soft = isSoftHand(hand.cards);
 
   while (shouldDealerHit(handValue, soft)) {
-    const [newCard, remaining] = dealOneCard(remainingShoe);
-    if (!newCard) break;
+    const dealResult = dealOneCard(remainingShoe);
+    if (!dealResult) break;
 
+    const [newCard, remaining] = dealResult;
     hand.cards.push(newCard);
     remainingShoe = remaining;
     handValue = calculateHandValue(hand.cards);
@@ -90,7 +91,7 @@ export function calculateResults(
       payout = 0;
     } else if (dealerBusted) {
       result = 'win';
-      payout = hand.isDoubled ? 2 : 1; // 1:1 profit, doubled if double down
+      payout = 1; // 1:1 profit (bet is already doubled in hand.bet if doubled down)
     } else if (playerBJ && !dealerBJ) {
       result = 'blackjack';
       payout = 1.5; // 3:2 profit = 150% of bet
@@ -99,7 +100,7 @@ export function calculateResults(
       payout = 0;
     } else if (playerValue > dealerValue) {
       result = 'win';
-      payout = hand.isDoubled ? 2 : 1; // 1:1 profit, doubled if double down
+      payout = 1; // 1:1 profit (bet is already doubled in hand.bet if doubled down)
     } else if (playerValue < dealerValue) {
       result = 'lose';
       payout = 0;
@@ -125,13 +126,18 @@ export function applyPayouts(
     const bet = hand.bet;
 
     // Payout calculation:
-    // payout represents profit as a fraction of bet (0.5 = 50% profit, 0.75 = 75% for blackjack)
-    // For wins: add profit only (bet is returned via game store)
-    // For push: payout = 0, bet is returned via game store
-    // For lose: nothing added (bet is lost)
-    if (roundResult.result !== 'lose') {
-      balance += Math.floor(bet * roundResult.payout);
+    // - Win: return bet + profit (bet * 1)
+    // - Blackjack: return bet + profit (bet * 1.5)
+    // - Push: return bet only (no profit)
+    // - Lose: nothing (bet is lost)
+    if (roundResult.result === 'win') {
+      balance += bet + Math.floor(bet * roundResult.payout); // bet returned + 1:1 profit
+    } else if (roundResult.result === 'blackjack') {
+      balance += bet + Math.floor(bet * roundResult.payout); // bet returned + 3:2 profit
+    } else if (roundResult.result === 'push') {
+      balance += bet; // bet returned, no profit
     }
+    // lose: nothing added
   }
 
   return balance;
