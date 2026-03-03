@@ -1,5 +1,5 @@
 import type { Card, Hand } from '../types';
-import { calculateHandValue, isBusted, isBlackjack } from './hand';
+import { calculateHandValue, isBusted, isBlackjack, isSoftHand } from './hand';
 
 export const DEALER_STAND_VALUE = 17;
 
@@ -43,23 +43,6 @@ function shouldDealerHit(value: number, soft: boolean): boolean {
   }
   // Hard hand: hit if less than 17
   return value < DEALER_STAND_VALUE;
-}
-
-function isSoftHand(cards: Card[]): boolean {
-  let value = 0;
-  let aces = 0;
-
-  for (const card of cards) {
-    value += card.rank === 'A' ? 11 : ['K', 'Q', 'J'].includes(card.rank) ? 10 : parseInt(card.rank, 10);
-    if (card.rank === 'A') aces++;
-  }
-
-  while (value > 21 && aces > 0) {
-    value -= 10;
-    aces--;
-  }
-
-  return aces > 0 && value <= 21;
 }
 
 function dealOneCard(shoe: Card[]): [Card, Card[]] | undefined {
