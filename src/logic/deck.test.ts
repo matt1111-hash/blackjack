@@ -73,6 +73,17 @@ describe('shuffle', () => {
     const result = shuffle([1]);
     expect(result).toEqual([1]);
   });
+
+  it('should produce different orderings (likely)', () => {
+    const original = Array.from({ length: 50 }, (_, i) => i);
+    const shuffled1 = shuffle(original);
+    const shuffled2 = shuffle(original);
+
+    // It is astronomically unlikely that two 50-element shuffles are identical
+    expect(shuffled1).not.toEqual(original);
+    expect(shuffled2).not.toEqual(original);
+    expect(shuffled1).not.toEqual(shuffled2);
+  });
 });
 
 describe('dealCard', () => {
