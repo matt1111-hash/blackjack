@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import type { Hand, GamePhase } from '../types';
 import { dealCard } from '../logic/deck';
 import { isBlackjack, createHand, isBusted } from '../logic/hand';
@@ -13,10 +12,9 @@ import {
 } from './gameHelpers';
 
 export const useGameStore = create<GameState>()(
-  persist(
-    (set, get) => ({
-      // Initial state
-      balance: INITIAL_BALANCE,
+  (set, get) => ({
+    // Initial state
+    balance: INITIAL_BALANCE,
       shoe: createFreshShoe(),
       shoePenetration: 0,
       playerHands: [],
@@ -267,10 +265,5 @@ export const useGameStore = create<GameState>()(
       resetBalance: () => {
         set({ balance: INITIAL_BALANCE });
       },
-    }),
-    {
-      name: 'blackjack-storage',
-      partialize: (state) => ({ balance: state.balance }),
-    }
-  )
+  })
 );
