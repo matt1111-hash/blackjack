@@ -74,8 +74,8 @@ export function calculateResults(
   dealerHand: Hand
 ): RoundResult[] {
   const dealerValue = calculateHandValue(dealerHand.cards);
-  const dealerBJ = isBlackjack(dealerHand.cards);
-  const dealerBusted = isBusted(dealerHand.cards);
+  const dealerBJ = isBlackjack(dealerHand.cards, dealerValue);
+  const dealerBusted = isBusted(dealerHand.cards, dealerValue);
 
   return playerHands.map((hand, index) => {
     const playerBJ = hand.isBlackjack;

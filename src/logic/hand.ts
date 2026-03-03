@@ -44,13 +44,15 @@ export function isSoftHand(cards: Card[]): boolean {
 }
 
 /** Checks if hand is busted */
-export function isBusted(cards: Card[]): boolean {
-  return calculateHandValue(cards) > 21;
+export function isBusted(cards: Card[], handValue?: number): boolean {
+  const value = handValue !== undefined ? handValue : calculateHandValue(cards);
+  return value > 21;
 }
 
 /** Checks if hand is blackjack (21 with 2 cards) */
-export function isBlackjack(cards: Card[]): boolean {
-  return cards.length === 2 && calculateHandValue(cards) === 21;
+export function isBlackjack(cards: Card[], handValue?: number): boolean {
+  const value = handValue !== undefined ? handValue : calculateHandValue(cards);
+  return cards.length === 2 && value === 21;
 }
 
 /** Creates empty hand with bet */
