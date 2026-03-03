@@ -88,6 +88,25 @@ describe('calculateHandValue', () => {
     ];
     expect(calculateHandValue(cards)).toBe(12); // 11 + 1 + 1 + 9 = 22 -> 12
   });
+
+  it('should calculate busted hand containing an Ace correctly', () => {
+    const cards: Card[] = [
+      { suit: 'hearts', rank: 'A', faceUp: true },
+      { suit: 'spades', rank: 'K', faceUp: true },
+      { suit: 'clubs', rank: 'Q', faceUp: true },
+      { suit: 'diamonds', rank: '2', faceUp: true },
+    ];
+    expect(calculateHandValue(cards)).toBe(23); // 11 + 10 + 10 + 2 = 33 -> 23
+  });
+
+  it('should calculate standard busted hand correctly', () => {
+    const cards: Card[] = [
+      { suit: 'hearts', rank: '10', faceUp: true },
+      { suit: 'spades', rank: '10', faceUp: true },
+      { suit: 'clubs', rank: '5', faceUp: true },
+    ];
+    expect(calculateHandValue(cards)).toBe(25);
+  });
 });
 
 describe('isSoftHand', () => {
@@ -150,6 +169,12 @@ describe('isBusted', () => {
     ];
     expect(isBusted(cards)).toBe(false);
   });
+
+  it('should use provided handValue if available', () => {
+    const cards: Card[] = [];
+    expect(isBusted(cards, 22)).toBe(true);
+    expect(isBusted(cards, 20)).toBe(false);
+  });
 });
 
 describe('isBlackjack', () => {
@@ -177,6 +202,15 @@ describe('isBlackjack', () => {
       { suit: 'clubs', rank: 'A', faceUp: true },
     ];
     expect(isBlackjack(cards)).toBe(false);
+  });
+
+  it('should use provided handValue if available', () => {
+    const cards: Card[] = [
+      { suit: 'hearts', rank: 'A', faceUp: true },
+      { suit: 'spades', rank: 'K', faceUp: true },
+    ];
+    expect(isBlackjack(cards, 21)).toBe(true);
+    expect(isBlackjack(cards, 20)).toBe(false);
   });
 });
 
