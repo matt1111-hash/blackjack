@@ -213,6 +213,3 @@ Ha a modell módosítja ezeket a coverage/lint elkerülésére = **AZONNALI FAIL
 - Ha hibát keres: először a teljes dependency graph-ot térképezi fel, 
   AZTÁN javasol megoldást
 - Az EMBER SOHA nem mutat rá a hibára — ez az agent dolga
-
-## Jules PR Review
-Lásd: [JULES_REVIEW.md](./JULES_REVIEW.md)
