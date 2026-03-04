@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "tailwindcss/utilities";
 
 /* 3D Perspective Utilities */
 @theme {

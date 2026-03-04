@@ -1,88 +1,21 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import type { Card, Hand, GamePhase } from '../types';
-import { createShoe, shuffle, dealCard } from '../logic/deck';
+import type { Hand, GamePhase } from '../types';
+import type { GameState } from './gameHelpers';
+import { dealCard } from '../logic/deck';
 import { isBlackjack, createHand, isBusted } from '../logic/hand';
-import { dealerPlay, calculateResults, applyPayouts } from '../logic/rules';
-
-const INITIAL_BALANCE = 5000;
-const SHOE_DECKS = 6;
-
-export interface RoundResult {
-  playerHandIndex: number;
-  result: 'win' | 'lose' | 'push' | 'blackjack';
-  payout: number;
-}
-
-interface GameState {
-  // Balance
-  balance: number;
-
-  // Shoe
-  shoe: Card[];
-  shoePenetration: number;
-
-  // Hands
-  playerHands: Hand[];
-  dealerHand: Hand;
-  activeHandIndex: number;
-
-  // Game phase
-  phase: GamePhase;
-
-  // Current bet
-  currentBet: number;
-
-  // Round results (for display)
-  roundResults: RoundResult[] | null;
-
-  // Actions
-  placeBet: (amount: number) => void;
-  deal: () => void;
-  hit: () => void;
-  stand: () => void;
-  double: () => void;
-  split: () => void;
-  newRound: () => void;
-  resetBalance: () => void;
-}
-
-function createFreshShoe(): Card[] {
-  return shuffle(createShoe(SHOE_DECKS));
-}
-
-function dealInitialHands(shoe: Card[], bet: number): { playerHand: Hand; dealerHand: Hand; remainingShoe: Card[] } {
-  const [playerCard1, shoe1] = dealCard(shoe, true)!;
-  const [dealerCard1, shoe2] = dealCard(shoe1, true)!;
-  const [playerCard2, shoe3] = dealCard(shoe2, true)!;
-  const [dealerCard2, remainingShoe] = dealCard(shoe3, false)!;
-
-  const playerHand: Hand = {
-    cards: [playerCard1, playerCard2],
-    bet,
-    isDoubled: false,
-    isStanding: false,
-    isBusted: false,
-    isBlackjack: isBlackjack([playerCard1, playerCard2]),
-  };
-
-  const dealerHand: Hand = {
-    cards: [dealerCard1, dealerCard2],
-    bet: 0,
-    isDoubled: false,
-    isStanding: false,
-    isBusted: false,
-    isBlackjack: false,
-  };
-
-  return { playerHand, dealerHand, remainingShoe };
-}
+import { calculateResults, applyPayouts, type RoundResult } from '../logic/rules';
+import {
+  INITIAL_BALANCE,
+  SHOE_DECKS,
+  createFreshShoe,
+  dealInitialHands,
+  handleAllHandsDone,
+} from './gameHelpers';
 
 export const useGameStore = create<GameState>()(
-  persist(
-    (set, get) => ({
-      // Initial state
-      balance: INITIAL_BALANCE,
+  (set, get) => ({
+    // Initial state
+    balance: INITIAL_BALANCE,
       shoe: createFreshShoe(),
       shoePenetration: 0,
       playerHands: [],
@@ -113,7 +46,11 @@ export const useGameStore = create<GameState>()(
         let results: RoundResult[] | null = null;
         let newBalance = balance;
 
-        if (playerBJ && !dealerBJ) {
+        // Check for insurance if dealer shows Ace and player doesn't have Blackjack
+        // (If player has BJ, they can't buy insurance, they just get paid 1:1 or push - for simplicity we just skip insurance phase)
+        if (dealerHand.cards[0]?.rank === 'A' && balance >= currentBet / 2) {
+          newPhase = 'insurance';
+        } else if (playerBJ && !dealerBJ) {
           newPhase = 'finished';
           dealerHand.cards[1].faceUp = true;
           results = calculateResults([playerHand], dealerHand);
@@ -142,6 +79,51 @@ export const useGameStore = create<GameState>()(
         });
       },
 
+      buyInsurance: () => {
+        const { balance, currentBet, dealerHand, shoe, playerHands } = get();
+        const insuranceCost = currentBet / 2;
+
+        if (balance < insuranceCost) return;
+
+        const newBalance = balance - insuranceCost;
+        const dealerBJ = isBlackjack(dealerHand.cards);
+
+        if (dealerBJ) {
+          // Dealer has BJ: Insurance pays 2:1, so player gets back insuranceCost + 2 * insuranceCost
+          // Meaning their balance increases by 2 * insuranceCost from current newBalance.
+          // In effect, they lose their main bet but win the insurance bet.
+          const finalBalance = newBalance + insuranceCost * 3;
+          // Main hand loses, so we resolve round
+          const finalState = handleAllHandsDone(dealerHand, shoe, playerHands, finalBalance);
+          set(finalState);
+        } else {
+          // Dealer no BJ: Insurance bet is lost, continue to playing phase
+          const playerBJ = playerHands[0]?.isBlackjack;
+          if (playerBJ) {
+             const finalState = handleAllHandsDone(dealerHand, shoe, playerHands, newBalance);
+             set(finalState);
+          } else {
+             set({
+               balance: newBalance,
+               phase: 'playing',
+             });
+          }
+        }
+      },
+
+      declineInsurance: () => {
+        const { dealerHand, shoe, playerHands, balance } = get();
+        const dealerBJ = isBlackjack(dealerHand.cards);
+        const playerBJ = playerHands[0]?.isBlackjack;
+
+        if (dealerBJ || playerBJ) {
+          const finalState = handleAllHandsDone(dealerHand, shoe, playerHands, balance);
+          set(finalState);
+        } else {
+          set({ phase: 'playing' });
+        }
+      },
+
       hit: () => {
         const { shoe, playerHands, activeHandIndex, dealerHand, balance } = get();
         const hand = playerHands[activeHandIndex];
@@ -168,18 +150,8 @@ export const useGameStore = create<GameState>()(
             });
           } else {
             // All hands done - run dealer turn directly
-            const { hand: finalDealerHand, remainingShoe: finalShoe } = dealerPlay(dealerHand, remainingShoe);
-            const results = calculateResults(newHands, finalDealerHand);
-            const newBalance = applyPayouts(balance, results, newHands);
-
-            set({
-              shoe: finalShoe,
-              dealerHand: finalDealerHand,
-              playerHands: newHands,
-              roundResults: results,
-              balance: newBalance,
-              phase: 'finished',
-            });
+            const finalState = handleAllHandsDone(dealerHand, remainingShoe, newHands, balance);
+            set(finalState);
           }
         } else {
           set({
@@ -202,23 +174,13 @@ export const useGameStore = create<GameState>()(
           });
         } else {
           // All hands done - run dealer turn directly
-          const { hand: finalDealerHand, remainingShoe } = dealerPlay(dealerHand, shoe);
-          const results = calculateResults(newHands, finalDealerHand);
-          const newBalance = applyPayouts(balance, results, newHands);
-
-          set({
-            shoe: remainingShoe,
-            dealerHand: finalDealerHand,
-            playerHands: newHands,
-            roundResults: results,
-            balance: newBalance,
-            phase: 'finished',
-          });
+          const finalState = handleAllHandsDone(dealerHand, shoe, newHands, balance);
+          set(finalState);
         }
       },
 
       double: () => {
-        const { balance, playerHands, activeHandIndex, shoe } = get();
+        const { balance, playerHands, activeHandIndex, shoe, dealerHand } = get();
         const hand = playerHands[activeHandIndex];
         if (!hand || hand.cards.length !== 2 || balance < hand.bet) return;
 
@@ -245,19 +207,8 @@ export const useGameStore = create<GameState>()(
           });
         } else {
           // All hands done - run dealer turn directly
-          const { dealerHand } = get();
-          const { hand: finalDealerHand, remainingShoe: finalShoe } = dealerPlay(dealerHand, remainingShoe);
-          const results = calculateResults(newHands, finalDealerHand);
-          const newBalance = applyPayouts(balance - hand.bet, results, newHands);
-
-          set({
-            balance: newBalance,
-            shoe: finalShoe,
-            dealerHand: finalDealerHand,
-            playerHands: newHands,
-            roundResults: results,
-            phase: 'finished',
-          });
+          const finalState = handleAllHandsDone(dealerHand, remainingShoe, newHands, balance - hand.bet);
+          set(finalState);
         }
       },
 
@@ -329,10 +280,5 @@ export const useGameStore = create<GameState>()(
       resetBalance: () => {
         set({ balance: INITIAL_BALANCE });
       },
-    }),
-    {
-      name: 'blackjack-storage',
-      partialize: (state) => ({ balance: state.balance }),
-    }
-  )
+  })
 );

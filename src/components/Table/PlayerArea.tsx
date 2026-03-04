@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { useMemo } from 'react';
 import { Hand } from '../Card/Hand';
 import { ActionButtons } from '../UI/ActionButtons';
 import { ChipSelector } from '../UI/ChipSelector';
@@ -43,6 +44,16 @@ export function PlayerArea({
   const isPlaying = gamePhase === 'playing';
   const isFinished = gamePhase === 'finished';
 
+  // O(1) lookup for round results
+  const roundResultsMap = useMemo(() => {
+    if (!roundResults) return null;
+    const map = new Map<number, { playerHandIndex: number; result: string }>();
+    for (const result of roundResults) {
+      map.set(result.playerHandIndex, result);
+    }
+    return map;
+  }, [roundResults]);
+
   // Determine player mood based on game state
   const getPlayerMood = (): 'neutral' | 'happy' | 'excited' | 'thinking' | 'sad' => {
     if (isBetting) return 'neutral';
@@ -86,7 +97,7 @@ export function PlayerArea({
             const isStanding = hand.isStanding;
 
             // Check if this hand won
-            const handResult = roundResults?.find((r) => r.playerHandIndex === index);
+            const handResult = roundResultsMap?.get(index);
             const hasWon = handResult && ['win', 'blackjack'].includes(handResult.result);
             const hasLost = handResult && handResult.result === 'lose';
 

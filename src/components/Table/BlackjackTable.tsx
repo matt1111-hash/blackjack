@@ -6,6 +6,7 @@ import { PlayerArea } from './PlayerArea';
 import { Balance } from '../UI/Balance';
 import { GameResult } from '../UI/GameResult';
 import { SoundSettings } from '../UI/SoundSettings';
+import { InsuranceDialog } from '../UI/InsuranceDialog';
 import type { ChipValue } from '../../types';
 import './BlackjackTable.css';
 
@@ -24,6 +25,8 @@ export function BlackjackTable() {
     stand,
     double,
     split,
+    buyInsurance,
+    declineInsurance,
     newRound,
   } = useGameStore();
 
@@ -40,9 +43,16 @@ export function BlackjackTable() {
   // Play result sounds when round finishes
   useEffect(() => {
     if (phase === 'finished' && roundResults) {
-      const hasWin = roundResults.some((r) => r.result === 'win' || r.result === 'blackjack');
-      const hasLose = roundResults.every((r) => r.result === 'lose');
-      const hasBlackjack = roundResults.some((r) => r.result === 'blackjack');
+      let hasWin = false;
+      let hasLose = true;
+      let hasBlackjack = false;
+
+      for (let i = 0; i < roundResults.length; i++) {
+        const result = roundResults[i].result;
+        if (result === 'win' || result === 'blackjack') hasWin = true;
+        if (result !== 'lose') hasLose = false;
+        if (result === 'blackjack') hasBlackjack = true;
+      }
 
       if (hasBlackjack) {
         setTimeout(playBlackjack, 500);
@@ -91,6 +101,17 @@ export function BlackjackTable() {
     playChipDrop();
     playButtonClick();
     split?.();
+  };
+
+  const handleBuyInsurance = () => {
+    playChipDrop();
+    playButtonClick();
+    buyInsurance();
+  };
+
+  const handleDeclineInsurance = () => {
+    playButtonClick();
+    declineInsurance();
   };
 
   return (
@@ -143,6 +164,15 @@ export function BlackjackTable() {
               DEAL
             </button>
           </div>
+        )}
+
+        {/* Insurance Dialog */}
+        {phase === 'insurance' && (
+          <InsuranceDialog
+            onBuy={handleBuyInsurance}
+            onDecline={handleDeclineInsurance}
+            insuranceCost={Math.floor(currentBet / 2)}
+          />
         )}
 
         {/* New Round button when finished */}

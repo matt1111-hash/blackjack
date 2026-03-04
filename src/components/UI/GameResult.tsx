@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import type { RoundResult } from '../../store/gameStore';
+import type { RoundResult } from '../../logic/rules';
 import type { Hand } from '../../types';
 import './GameResult.css';
 

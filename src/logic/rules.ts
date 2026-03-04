@@ -1,5 +1,5 @@
 import type { Card, Hand } from '../types';
-import { calculateHandValue, isBusted, isBlackjack } from './hand';
+import { calculateHandValue, isBusted, isBlackjack, isSoftHand } from './hand';
 
 export const DEALER_STAND_VALUE = 17;
 
@@ -46,23 +46,6 @@ function shouldDealerHit(value: number, soft: boolean): boolean {
   return value < DEALER_STAND_VALUE;
 }
 
-function isSoftHand(cards: Card[]): boolean {
-  let value = 0;
-  let aces = 0;
-
-  for (const card of cards) {
-    value += card.rank === 'A' ? 11 : ['K', 'Q', 'J'].includes(card.rank) ? 10 : parseInt(card.rank, 10);
-    if (card.rank === 'A') aces++;
-  }
-
-  while (value > 21 && aces > 0) {
-    value -= 10;
-    aces--;
-  }
-
-  return aces > 0 && value <= 21;
-}
-
 function dealOneCard(shoe: Card[]): [Card, Card[]] | undefined {
   if (shoe.length === 0) return undefined;
   const [card, ...remaining] = shoe;
@@ -75,8 +58,8 @@ export function calculateResults(
   dealerHand: Hand
 ): RoundResult[] {
   const dealerValue = calculateHandValue(dealerHand.cards);
-  const dealerBJ = isBlackjack(dealerHand.cards);
-  const dealerBusted = isBusted(dealerHand.cards);
+  const dealerBJ = isBlackjack(dealerHand.cards, dealerValue);
+  const dealerBusted = isBusted(dealerHand.cards, dealerValue);
 
   return playerHands.map((hand, index) => {
     const playerBJ = hand.isBlackjack;
@@ -106,7 +89,7 @@ export function calculateResults(
       payout = 0;
     } else {
       result = 'push';
-      payout = 0; // No profit, bet returned
+      payout = 0;
     }
 
     return { playerHandIndex: index, result, payout };
