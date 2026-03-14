@@ -153,7 +153,7 @@ describe('useGameStore', () => {
       expect(state.phase).toBe('finished');
     });
 
-    it('split creates two hands and updates active hand index', () => {
+    it('split creates two hands and keeps the first split hand active', () => {
       useGameStore.setState({
         playerHands: [{
           cards: [mockCard('8'), mockCard('8', 'spades')],
@@ -171,8 +171,7 @@ describe('useGameStore', () => {
       expect(state.playerHands.length).toBe(2);
       expect(state.playerHands[0].cards).toEqual([mockCard('8'), mockCard('2')]);
       expect(state.playerHands[1].cards).toEqual([mockCard('8', 'spades'), mockCard('3')]);
-      // Note: testing current actual behavior which increments activeHandIndex
-      expect(state.activeHandIndex).toBe(1);
+      expect(state.activeHandIndex).toBe(0);
     });
   });
 

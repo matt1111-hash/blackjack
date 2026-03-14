@@ -36,3 +36,6 @@ __pycache__/
 analysis_out/
 audit_results/
 *_audit*
+venv/
+.venv/
+*.egg-info/
