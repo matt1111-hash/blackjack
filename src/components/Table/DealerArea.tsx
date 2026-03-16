@@ -22,11 +22,11 @@ export function DealerArea({ hand, showHoleCard = false }: DealerAreaProps) {
   };
 
   return (
-    <div className="dealer-area">
+    <div className="dealer-area" data-testid="dealer-area">
       <DealerAvatar mood={getDealerMood()} size={56} />
       <div className="dealer-area__label">DEALER</div>
       <Hand cards={displayCards} spread />
-      <div className="dealer-area__value">
+      <div className="dealer-area__value" data-testid="dealer-value">
         {(showHoleCard || hand.cards[1]?.faceUp) ? value : '?'}
       </div>
     </div>

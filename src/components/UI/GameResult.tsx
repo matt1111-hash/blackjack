@@ -24,12 +24,13 @@ const RESULT_COLORS: Record<string, string> = {
 
 export function GameResult({ results, hands }: GameResultProps) {
   return (
-    <div className="game-result-overlay">
+    <div className="game-result-overlay" data-testid="game-result-overlay">
       <AnimatePresence>
         {results.map((result, index) => (
           <motion.div
             key={result.playerHandIndex}
             className="game-result-card"
+            data-testid={`game-result-card-${result.playerHandIndex}`}
             initial={{ scale: 0, opacity: 0, y: 50 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0, opacity: 0 }}
@@ -41,6 +42,7 @@ export function GameResult({ results, hands }: GameResultProps) {
             )}
             <div
               className="game-result__badge"
+              data-testid={`game-result-badge-${result.playerHandIndex}`}
               style={{ backgroundColor: RESULT_COLORS[result.result] }}
             >
               {RESULT_LABELS[result.result]}

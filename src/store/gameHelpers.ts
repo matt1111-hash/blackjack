@@ -5,6 +5,10 @@ import { dealerPlay, calculateResults, applyPayouts } from '../logic/rules';
 
 export const INITIAL_BALANCE = 5000;
 export const SHOE_DECKS = 6;
+export const E2E_SHOE_STORAGE_KEY = 'blackjack:e2e-shoe';
+
+const VALID_SUITS = new Set(['hearts', 'diamonds', 'clubs', 'spades']);
+const VALID_RANKS = new Set(['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']);
 
 export interface RoundResult {
   playerHandIndex: number;
@@ -47,8 +51,46 @@ export interface GameState {
   resetBalance: () => void;
 }
 
+function isValidCard(candidate: unknown): candidate is Card {
+  if (typeof candidate !== 'object' || candidate === null) {
+    return false;
+  }
+
+  const card = candidate as Partial<Card>;
+  return (
+    typeof card.rank === 'string' &&
+    typeof card.suit === 'string' &&
+    typeof card.faceUp === 'boolean' &&
+    VALID_RANKS.has(card.rank) &&
+    VALID_SUITS.has(card.suit)
+  );
+}
+
+function getConfiguredShoe(): Card[] | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const rawValue = window.localStorage.getItem(E2E_SHOE_STORAGE_KEY);
+  if (!rawValue) {
+    return null;
+  }
+
+  try {
+    const parsedValue = JSON.parse(rawValue);
+    if (!Array.isArray(parsedValue)) {
+      return null;
+    }
+
+    const configuredShoe = parsedValue.filter(isValidCard);
+    return configuredShoe.length > 0 ? configuredShoe : null;
+  } catch {
+    return null;
+  }
+}
+
 export function createFreshShoe(): Card[] {
-  return shuffle(createShoe(SHOE_DECKS));
+  return getConfiguredShoe() ?? shuffle(createShoe(SHOE_DECKS));
 }
 
 export function dealInitialHands(shoe: Card[], bet: number): { playerHand: Hand; dealerHand: Hand; remainingShoe: Card[] } {

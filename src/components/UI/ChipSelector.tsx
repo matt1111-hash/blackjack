@@ -23,6 +23,8 @@ export function ChipSelector({ onPlaceBet, disabled, balance }: ChipSelectorProp
               className="chip-selector__chip-btn"
               onClick={() => onPlaceBet(value)}
               disabled={disabled || !canAfford}
+              data-testid={`bet-chip-${value}`}
+              aria-label={`Bet ${value}`}
               whileHover={!disabled && canAfford ? { scale: 1.1, y: -4 } : undefined}
               whileTap={!disabled && canAfford ? { scale: 0.95 } : undefined}
             >

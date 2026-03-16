@@ -37,6 +37,8 @@ __pycache__/
 analysis_out/
 audit_results/
 *_audit*
+playwright-report/
+test-results/
 venv/
 .venv/
 *.egg-info/

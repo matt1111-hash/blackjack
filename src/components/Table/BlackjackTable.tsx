@@ -160,7 +160,7 @@ export function BlackjackTable() {
         {/* Deal button when betting */}
         {phase === 'betting' && currentBet > 0 && (
           <div className="blackjack-table__deal-btn">
-            <button className="deal-button" onClick={handleDeal}>
+            <button className="deal-button" onClick={handleDeal} data-testid="deal-button" aria-label="Deal">
               DEAL
             </button>
           </div>
@@ -178,7 +178,7 @@ export function BlackjackTable() {
         {/* New Round button when finished */}
         {phase === 'finished' && (
           <div className="blackjack-table__new-round-btn">
-            <button className="deal-button" onClick={handleNewRound}>
+            <button className="deal-button" onClick={handleNewRound} data-testid="new-round-button" aria-label="New round">
               NEW ROUND
             </button>
           </div>

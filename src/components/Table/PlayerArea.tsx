@@ -105,6 +105,7 @@ export function PlayerArea({
               <motion.div
                 key={index}
                 className={`player-area__hand ${isActive ? 'player-area__hand--active' : ''} ${isBusted ? 'player-area__hand--busted' : ''}`}
+                data-testid={`player-hand-${index}`}
                 initial={{ scale: 0.8, opacity: 0, y: 30 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.8, opacity: 0 }}
@@ -129,6 +130,7 @@ export function PlayerArea({
 
                 <motion.div
                   className={`player-area__hand-value ${isBusted ? 'player-area__hand-value--busted' : ''}`}
+                  data-testid={`player-hand-value-${index}`}
                   animate={
                     isBusted
                       ? { backgroundColor: '#dc2626' }
