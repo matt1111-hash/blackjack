@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint src vite.config.ts playwright.config.ts --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint src vite.config.ts vitest.config.ts playwright.config.ts --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest --run",
