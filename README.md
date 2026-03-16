@@ -24,6 +24,12 @@ npm test -- --run
 npm run build
 ```
 
+## Desktop indítás
+
+```bash
+./scripts/launch_desktop.sh
+```
+
 ## Fontos fájlok
 
 - `src/store/gameStore.ts`: játékállapot és akciók

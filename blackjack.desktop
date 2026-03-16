@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Blackjack
+Comment=Frontend blackjack game
+Exec=/home/tibor/PythonProjects/blackjack/scripts/launch_desktop.sh
+Icon=applications-games
+Terminal=false
+Categories=Game;
