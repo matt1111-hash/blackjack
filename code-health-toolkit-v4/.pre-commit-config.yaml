@@ -1,0 +1,207 @@
+# =============================================================================
+# PRE-COMMIT - Code Health Toolkit v4.0 (Monorepo Edition)
+# =============================================================================
+# backend/ → Python hooks (ruff, mypy, bandit, pytest)
+# frontend/ → JS hooks (eslint, prettier, tsc)
+# =============================================================================
+
+default_language_version:
+  python: python3.12
+
+repos:
+  # ---------------------------------------------------------------------------
+  # BASICS - minden fájlra (mindkét oldal)
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^frontend/node_modules/
+      - id: end-of-file-fixer
+        exclude: ^frontend/node_modules/
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+        exclude: ^frontend/node_modules/
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: debug-statements
+        files: ^backend/
+      - id: detect-private-key
+        exclude: ^frontend/node_modules/
+
+  # ---------------------------------------------------------------------------
+  # BACKEND: RUFF - Lint + Format
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.6
+    hooks:
+      - id: ruff
+        files: ^backend/
+        args: [--fix]
+      - id: ruff-format
+        files: ^backend/
+
+  # ---------------------------------------------------------------------------
+  # BACKEND: MYPY
+  # ---------------------------------------------------------------------------
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy (backend)
+        files: ^backend/
+        entry: >-
+          bash -c 'cd backend &&
+          SRC=$(for d in src app lib; do [ -d "$d" ] && find "$d" -name "*.py" -type f 2>/dev/null | grep -q . && echo "$d" && break; done);
+          SRC=${SRC:-.};
+          if [ -x venv/bin/python ]; then
+            exec venv/bin/python -m mypy "$SRC" --ignore-missing-imports;
+          elif [ -x .venv/bin/python ]; then
+            exec .venv/bin/python -m mypy "$SRC" --ignore-missing-imports;
+          else
+            exec python -m mypy "$SRC" --ignore-missing-imports;
+          fi'
+        language: system
+        pass_filenames: false
+
+  # ---------------------------------------------------------------------------
+  # BACKEND: ARCHITECTURE
+  # ---------------------------------------------------------------------------
+  - repo: local
+    hooks:
+      - id: import-linter
+        name: architecture check (backend)
+        files: ^backend/
+        entry: >-
+          bash -c 'cd backend &&
+          if [ ! -f .importlinter ]; then
+            echo "No .importlinter - skipped"; exit 0;
+          fi;
+          if grep -Eq "^[[:space:]]*root_package[[:space:]]*=[[:space:]]*src[[:space:]]*$" .importlinter &&
+             [ ! -f src/__init__.py ]; then
+            echo "Template .importlinter - customize first"; exit 0;
+          fi;
+          if [ -x venv/bin/lint-imports ]; then
+            exec venv/bin/lint-imports;
+          elif [ -x .venv/bin/lint-imports ]; then
+            exec .venv/bin/lint-imports;
+          elif command -v lint-imports >/dev/null 2>&1; then
+            exec lint-imports;
+          else
+            echo "lint-imports not installed"; exit 1;
+          fi'
+        language: system
+        pass_filenames: false
+        always_run: true
+
+  # ---------------------------------------------------------------------------
+  # BACKEND: COMPLEXITY
+  # ---------------------------------------------------------------------------
+  - repo: local
+    hooks:
+      - id: complexity
+        name: complexity check (backend)
+        files: ^backend/
+        entry: >-
+          bash -c 'cd backend &&
+          SRC=$(for d in src app lib; do [ -d "$d" ] && echo "$d" && break; done);
+          command -v radon >/dev/null &&
+          radon cc "${SRC:-.}" -e "tests/*,venv/*,.venv/*,__pycache__/*" -a -nc || true'
+        language: system
+        pass_filenames: false
+        types: [python]
+
+  # ---------------------------------------------------------------------------
+  # BACKEND: PYTEST
+  # ---------------------------------------------------------------------------
+  - repo: local
+    hooks:
+      - id: pytest
+        name: quick test (backend)
+        files: ^backend/
+        entry: >-
+          bash -c 'cd backend &&
+          if [ -x venv/bin/pytest ]; then
+            exec venv/bin/pytest -x -q --no-cov -m "not slow";
+          elif [ -x .venv/bin/pytest ]; then
+            exec .venv/bin/pytest -x -q --no-cov -m "not slow";
+          else
+            exec pytest -x -q --no-cov -m "not slow";
+          fi'
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+
+  # ---------------------------------------------------------------------------
+  # BACKEND + FRONTEND: SECRETS
+  # ---------------------------------------------------------------------------
+  - repo: local
+    hooks:
+      - id: detect-secrets
+        name: detect secrets
+        entry: >-
+          bash -c 'if [ ! -f .secrets.baseline ]; then
+            echo "No .secrets.baseline - skipped";
+            exit 0;
+          fi;
+          if command -v detect-secrets-hook >/dev/null 2>&1; then
+            exec detect-secrets-hook --baseline .secrets.baseline "$@";
+          else
+            echo "detect-secrets not installed"; exit 1;
+          fi' --
+        language: system
+        exclude: package-lock.json
+        stages: [pre-commit]
+
+  # ===========================================================================
+  # FRONTEND HOOKS
+  # ===========================================================================
+
+  # ---------------------------------------------------------------------------
+  # FRONTEND: ESLINT
+  # ---------------------------------------------------------------------------
+  - repo: local
+    hooks:
+      - id: eslint
+        name: ESLint (frontend)
+        files: ^frontend/src/.*\.[jt]sx?$
+        entry: bash -c 'cd frontend && npx eslint --fix "$@"' --
+        language: system
+        pass_filenames: true
+
+  # ---------------------------------------------------------------------------
+  # FRONTEND: PRETTIER
+  # ---------------------------------------------------------------------------
+  - repo: local
+    hooks:
+      - id: prettier
+        name: Prettier (frontend)
+        files: ^frontend/src/.*\.[jt]sx?$
+        entry: bash -c 'cd frontend && npx prettier --write "$@"' --
+        language: system
+        pass_filenames: true
+
+  # ---------------------------------------------------------------------------
+  # FRONTEND: TYPESCRIPT CHECK
+  # ---------------------------------------------------------------------------
+  - repo: local
+    hooks:
+      - id: tsc
+        name: TypeScript typecheck (frontend)
+        files: ^frontend/src/.*\.tsx?$
+        entry: bash -c 'cd frontend && npx tsc --noEmit'
+        language: system
+        pass_filenames: false
+
+  # ---------------------------------------------------------------------------
+  # FRONTEND: VITEST (gyors, pre-commit stage-ben fut)
+  # ---------------------------------------------------------------------------
+  - repo: local
+    hooks:
+      - id: vitest
+        name: Vitest (frontend)
+        files: ^frontend/src/
+        entry: bash -c 'cd frontend && npx vitest run --reporter=verbose'
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
