@@ -42,3 +42,5 @@ test-results/
 venv/
 .venv/
 *.egg-info/
+*.tsbuildinfo
+*.d.ts
