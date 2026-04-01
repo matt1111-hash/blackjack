@@ -1,73 +1,126 @@
-# Blackjack Architektúra és Hibakeresési Jelentés
+# Blackjack Statikus Analízis Jelentés
 
-## Architekturális Elemzés és Függőségi Gráf (Dependency Graph)
-
-A kód alapos vizsgálata alapján a projekt a következőképpen van strukturálva, amely nagy vonalakban követi a Clean Architecture elveit (Domain, Application/Use Cases, Presentation/UI):
-
-### 1. Presentation/UI Réteg (React + Components)
-- **Könyvtárak:** `src/components/`, `src/hooks/`
-- **Szerepkör:** A felhasználói felület renderelése és a felhasználói interakciók kezelése.
-- **Függőségek:** Közvetlenül a `src/store/gameStore.ts`-re támaszkodik a játékállapot lekéréséhez és az akciók (pl. `hit`, `stand`, `placeBet`) indításához. Nem tartalmaz magszintű (domain) üzleti logikát.
-
-### 2. Application/State Management Réteg (Zustand)
-- **Fájlok:** `src/store/gameStore.ts`, `src/store/gameHelpers.ts`
-- **Szerepkör:** Ez a "Single Source of Truth", a játék központi állapota. Összeköti a UI-t a Domain logikával. Kezeli a fázisátmeneteket (`betting` -> `playing` -> `finished`).
-- **Függőségek:** Importálja a `src/logic/` domain függvényeit.
-- **Mechanizmus:**
-  - Az inicializálás a `gameHelpers.ts` `createFreshShoe()` függvényével történik (amely vagy `localStorage`-ből tölti be az E2E teszt cipőt, vagy egy új véletlenszerűt generál a `deck.ts`-ből).
-  - A `gameStore.ts` akciói (`deal`, `hit`, `stand`, `double`, `split`, `buyInsurance`) módosítják a játékos lapjait.
-  - Amikor minden játékoskéz befejezte a kört (pl. mindenki megállt vagy besokallt), a `gameHelpers.ts`-ben lévő `handleAllHandsDone()` kerül meghívásra, ami levezényli az osztó körét és a kiértékelést.
-
-### 3. Domain Logic Réteg (Tiszta TypeScript függvények)
-- **Könyvtárak:** `src/logic/`
-- **Fájlok és Felelősségek:**
-  - `deck.ts`: Kártyák, paklik és cipő (shoe) létrehozása. Tartalmazza a keverést (fisher-yates shuffle), ami *kriptográfiailag biztonságos* `crypto.getRandomValues`-t használ.
-  - `hand.ts`: Kézértékek kiszámítása (`calculateHandValue`), besokallás (`isBusted`), és blackjack ellenőrzés (`isBlackjack`). Az Ászok értékének dinamikus (11 vagy 1) kezelése itt történik.
-  - `rules.ts`: A legmélyebb üzleti szabályok.
-    - `dealerPlay`: Az osztó húzási logikája (Stand on Soft 17).
-    - `calculateResults`: A nyertes/vesztes/döntetlen/blackjack kimenetelek eldöntése.
-    - `applyPayouts`: A zsetonok/egyenleg kiszámítása az eredmények alapján.
-
-## Felfedezett Problémák és Inkonzisztenciák (Gyökérokok)
-
-A "tünet alapú" hibakeresés helyett a kód áttanulmányozása során a következő potenciális logikai hibákat és inkonzisztenciákat tártam fel a `src/logic/rules.ts` és `src/store/` integrációjában:
-
-### 1. Inkonzisztens Kifizetési Szorzó (Payout Calculation Bug)
-- **Fájl:** `src/logic/rules.ts`
-- **Helyszín:** `calculateResults` (56-97. sor) és `applyPayouts` (100-128. sor)
-- **A hiba leírása:**
-  A `calculateResults` függvény a normál győzelemhez (`win`) `payout = 1` értéket ad. A megjegyzés szerint ez "1:1 profit (bet is already doubled in hand.bet if doubled down)".
-  A `applyPayouts` függvény az egyenleghez a következőt adja hozzá: `balance += bet + Math.floor(bet * roundResult.payout)`.
-  **A probléma a "Double Down" (Duplázás) esetén van.**
-  A `gameStore.ts`-ben (146. sor) amikor a játékos dupláz, a `hand.bet` megduplázódik, ÉS a plusz tét levonásra kerül az egyenlegből (`balance - hand.bet` ahol a hand.bet még az eredeti tét).
-  Azonban, ha a játékos nyer, az `applyPayouts` a *megduplázott* `hand.bet`-et használja, és hozzáadja a `bet + bet * 1`-et. Mivel a `payout` szorzó itt a profitért felel, a matek önmagában helyes lehet, DE a kód nagyon törékeny az állapotfrissítési sorrend miatt. Különösen a tesztekben és a valós UI állapotban inkonzisztenciát okozhat, ha a `payout` valahol a teljes visszakapott összeget, máshol csak a profit szorzóját jelenti.
-
-### 2. Osztó Logikája: Soft 17 Komment vs. Kód Ellentmondás
-- **Fájl:** `src/logic/rules.ts`
-- **Helyszín:** `shouldDealerHit` (39-45. sor)
-- **A hiba leírása:**
-  ```typescript
-  function shouldDealerHit(value: number, soft: boolean): boolean {
-    if (soft) {
-      // Soft 17: hit (since dealer stands on soft 17 is false)
-      return value < DEALER_STAND_VALUE;
-    }
-    // Hard hand: hit if less than 17
-    return value < DEALER_STAND_VALUE;
-  }
-  ```
-  A `DEALER_STAND_VALUE` értéke 17. Ha az osztónak "Soft 17"-e van (`value = 17`, `soft = true`), a `17 < 17` feltétel `false`-ra értékelődik. Ez azt jelenti, hogy az osztó **MEGÁLL** a Soft 17-en.
-  Azonban a megjegyzés azt állítja: *"Soft 17: hit (since dealer stands on soft 17 is false)"*.
-  Ez egy súlyos ellentmondás az elvárt üzleti logika (komment) és a tényleges implementáció között. Jelenleg a kód szigorúan S17 (Stand on all 17s) szabályt követ.
-
-### 3. Biztosítás (Insurance) Állapotkezelési Probléma
-- **Fájl:** `src/store/gameStore.ts`
-- **Helyszín:** `buyInsurance` (77-106. sor)
-- **A hiba leírása:**
-  Amikor a játékos biztosítást köt, és az osztónak Blackjackje van:
-  `const finalBalance = newBalance + insuranceCost * 3;`
-  A kód azonnal meghívja a `handleAllHandsDone(dealerHand, shoe, playerHands, finalBalance)` függvényt.
-  A probléma az, hogy a `handleAllHandsDone` újra ki fogja értékelni a `calculateResults`-t. Mivel az osztónak Blackjackje van, a játékos fő keze elveszíti a kört (kivéve, ha neki is BJ-je van, ami Push). A `handleAllHandsDone` a `finalBalance`-ot kapja meg bemenetként (amiben már benne van a biztosítás nyereménye), és mivel a játékos veszít (`lose`), a `applyPayouts` nem ad hozzá semmit. Ez *matematikailag* helyes végösszeget eredményez, DE az állapotmenedzsment szempontjából egy rejtett, "kötéltáncos" megoldás, ami nagyon megnehezíti a jövőbeli refaktorálást vagy a UI számára a pontos eseménynapló (log) megjelenítését (a UI nem tudja egyértelműen szétválasztani a biztosítás nyereményét a főkéz elvesztésétől a `roundResults` alapján, mert az csak a főkéz eredményét tartalmazza).
+A repó átfogó vizsgálata alapján az alábbi audit eredmények születtek. Kódmódosítás nem történt, az észrevételek szigorúan az állapot felmérésére korlátozódnak.
 
 ---
-*A fenti megállapítások tisztán olvasási (read-only) jogkörrel történő kódelemzésen alapulnak, módosítás nem történt.*
+
+## 1. Architektúra
+
+A projekt a Clean Architecture bizonyos elveit követi (szétválasztott UI/Presentation `components`, Application/State `store`, és Domain `logic` rétegek), de található néhány kisebb áthallás.
+
+**Tünetek / Észrevételek:**
+* A `src/components/Table/DealerArea.tsx` és `src/components/Table/PlayerArea.tsx` közvetlenül importálja és használja a `calculateHandValue` függvényt a `src/logic/hand.ts`-ből a UI-os megjelenítéshez. Hasonlóan, a `GameResult.tsx` a `src/logic/rules.ts`-ből szed típust.
+* A React tesztek (pl. `BlackjackTable.test.tsx`) közvetlenül használnak logikai függvényeket.
+
+**Gyökér ok:**
+* A számított értékeket (mint a kéz értéke) a komponensek közvetlenül végzik ahelyett, hogy a `gameStore.ts` szolgáltatná ezeket az adatokat származtatott (derived) állapotként.
+
+**Javaslat:**
+* A `Zustand` store (vagy dedikált selector-ok) feleljenek az ilyen adatok előállításáért, a komponensek pedig csak az értékeket olvassák ki, teljesen izolálva őket a domain logikától (`src/logic`).
+
+---
+
+## 2. Dependency fa és verziókövetkezetesség
+
+Az `npm ls` parancs lefutott, a függőségi fát felmértük. Nincs jele durva verzióütközésnek, deduplikációs problémának. A `package.json` rendben van, az `npm install` és a `bun install` megfelelően lefutott. Viszont az ellenőrzés rávilágított nem használt dev dependency-kre.
+
+**Tünet:**
+* A `knip` jelentése szerint a következő devDependencies nem használtak:
+  * `@tailwindcss/postcss`
+  * `eslint-plugin-react-refresh`
+  * `globals`
+  * `postcss`
+
+**Javaslat:**
+* Távolítsuk el ezeket a csomagokat a `package.json`-ból.
+
+---
+
+## 3. Tesztek és coverage
+
+A `vitest --coverage` lefutott (100% közelében a `src/logic` és magas a többire is).
+
+**Tünetek / Észrevételek:**
+* Az alábbi komponensek nem rendelkeznek 100%-os teszt lefedettséggel a `src/components/` és `src/store/` alatt, beleértve a teljesen fedetlen részeket:
+  * `BettingArea.tsx` (0% coverage)
+  * `BlackjackTable.tsx`
+  * `ActionButtons.tsx`
+  * `ChipSelector.tsx`
+  * `GameResult.tsx`
+  * `gameHelpers.ts`
+  * `gameStore.ts`
+
+**Gyökér ok:**
+* A fenti UI elemek interaktív viselkedése és egyes store edge-case-ek nincsenek letesztelve, a `BettingArea.tsx` egyáltalán nincs betöltve/tesztelve.
+* A `BlackjackTable.test.tsx` a teljes komponenst rendereli egy viszonylag hosszú integrációs tesztként (1 másodperces futási idő).
+
+**Javaslat:**
+* E2E/integrációs tesztek helyett/mellett izolált unit tesztek (pl. Zustand store dedikált tesztelése a szabályzat alapján `.getState()` hívásokkal) és specifikus komponens tesztek hozzáadása. Kifejezetten a `BettingArea`-hoz teszt írása.
+
+---
+
+## 4. Build és bundle
+
+A `vite build` tesztelésekor a TypeScript (tsc) hibát dobott a build pipeline-ban.
+
+**Tünet:**
+* A `npm run build` (mely `tsc -b && vite build` parancsokat futtat) elbukik ezzel a hibával:
+  ```
+  vite.config.ts(7,3): error TS2769: No overload matches this call.
+  ... 'test' does not exist in type 'UserConfigExport'.
+  ```
+
+**Gyökér ok:**
+* A `vite.config.ts` tartalmaz `test` beállításokat a Vitest miatt, de hiányzik a Vitest típusokra való explicit hivatkozás, amit a TypeScript fordító igényel.
+
+**Javaslat:**
+* A `vite.config.ts` legelső sorába (vagy az importok elé) be kell szúrni a következőt: `/// <reference types="vitest/config" />`. Bár ezt most a szabályzat szerint nem módosítjuk, a hiba fennáll.
+
+---
+
+## 5. Típusbiztosság
+
+Bár a kód szigorú TypeScript módra épít és konkrét `any` típusok elvétve sem fordulnak elő a `src` mappán belül, vannak potenciálisan nem biztonságos típuskonverziók (Type Assertions).
+
+**Tünet:**
+* A `grep -rn "as "` használatával sok `as` castolást találtunk, többek között:
+  * React CSSProperties castolások animációknál (pl. `as React.CSSProperties`) - *ezek viszonylag ártalmatlanok*.
+  * Tesztekben és teszteszközökben (`deck.test.ts`, `rules.test.ts`, `gameHelpers.ts`) sok erőszakos castolás van:
+    * `dealCard(deck) as [import('../types').Card, import('../types').Card[]]`
+    * `const card = candidate as Partial<Card>;` a `gameHelpers.ts`-ben.
+
+**Gyökér ok:**
+* Olyan esetekben, ahol a TypeScript nem tudta egyértelműen leszűkíteni a típust, vagy ahol egy objektum csak egy részét használták (pl. teszt mock-ok), `as` cast-hoz folyamodtak. A tuple/tömb dekonstrukciónál hiányzik a szigorúbb típusos visszatérési érték (vagy a typescript as const következtetés).
+
+**Javaslat:**
+* Használjunk type guardokat (pl. `is Card` fügvényeket) vagy határozzuk meg a visszatérési típusokat szigorúbban. A `gameHelpers.ts`-beli `as Partial<Card>` esetében egy valós `Type Guard` vagy validáció szükséges.
+
+---
+
+## 6. Dead code és lint
+
+A kód vizsgálatához a `knip` eszközt is lefuttattuk.
+
+**Tünetek:**
+* Az alábbi, használaton kívüli fájlok / exportok találhatók:
+  * Használaton kívüli fájlok: Sok `.css` fájl (pl. `App.css`, `Avatar.css`), valamint a `BettingArea.tsx`, `BettingArea.css`, `CardAnimations.tsx`, `ChipStack.tsx`, `useGameAnimations.ts`.
+  * Használaton kívüli exportok:
+    * `ChipButton` (a `src/components/Chip/ChipAnimations.tsx`-ből)
+    * `DEALER_STAND_VALUE` (a `src/logic/rules.ts`-ből)
+    * `E2E_SHOE_STORAGE_KEY` (a `src/store/gameHelpers.ts`-ből)
+  * Használaton kívüli típusok: `SoundType`, `HandResult`.
+
+**Gyökér ok:**
+* A fejlesztés során benne maradtak korábbi iterációk vagy tervezett, de még be nem kötött funkciók (pl. kártya és zseton animációs fájlok, amik nem kerültek használatba). A CSS-eket valószínűleg leváltotta a Tailwind.
+
+**Javaslat:**
+* Távolítsuk el ezeket a dead file-okat, exportokat, ne terheljük feleslegesen a projektet (például a nem használt animációs és CSS fájlokat törölni kell, vagy be kell kötni a használatukat). A Lint (`npm run lint`) hibátlanul lefutott (vagyis a `max-warnings 0` nem dobott hibát), ami dicséretes.
+
+---
+
+## Összegzés a korábban azonosított inkonzisztenciákról
+
+Korábbi analízisünk (ami a szabályok vizsgálatából fakadt) három potenciális logikai és állapotmenedzsmenti hibát is felszínre hozott, melyeket dokumentálni kell:
+1. **Inkonzisztens Kifizetési Szorzó (Payout Calculation Bug):** A `rules.ts`-ben (`applyPayouts` és `calculateResults`) a "Double Down" miatti kifizetés állapota nagyon törékeny, a `payout` változó értelmezése (profit szorzó vs teljes viszakapott szorzó) zavaros.
+2. **Soft 17 Komment vs. Kód Ellentmondás:** A `rules.ts`-ben (39-45. sor) a `shouldDealerHit` függvénynél a megjegyzés szerint az osztó húz (hit) Soft 17-re, míg a kód megáll (stand).
+3. **Biztosítás (Insurance) Állapotkezelési Probléma:** A `gameStore.ts`-ben (77-106. sor) a biztosítás nyereménye azonnal módosítja az egyenleget és utána beindul a standard fázis vége logika, amely "lose" eredmény esetén nem vonja ki a főtéteket korrekten, ha már a biztosítással a balansz számítás megzavarodott. Ezt tiszta állapotátmenetekkel érdemes refaktorálni.
