@@ -1,0 +1,102 @@
+name: 🎭 E2E Tesztek (Phase 11)
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox]
+
+    steps:
+      - name: 📥 Kód letöltése
+        uses: actions/checkout@v4
+
+      - name: 🐍 Python beállítása
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: 📦 Backend függőségek telepítése
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install uvicorn[standard] fastapi
+
+      - name: 📦 Node.js beállítása
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 📦 Frontend függőségek telepítése
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: 📦 E2E teszt függőségek telepítése
+        working-directory: ./tests/e2e
+        run: npm install
+
+      - name: 🎭 Playwright böngészők telepítése
+        working-directory: ./tests/e2e
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: 🏃 Full dev stack indítása
+        run: |
+          ./scripts/dev.sh > /tmp/health-explorer-dev.log 2>&1 &
+          for _ in $(seq 1 60); do
+            curl -fsS http://127.0.0.1:8001/health >/dev/null 2>&1 && \
+            curl -fsS http://127.0.0.1:5173 >/dev/null 2>&1 && exit 0
+            sleep 2
+          done
+          cat /tmp/health-explorer-dev.log
+          exit 1
+
+      - name: 🎭 E2E tesztek futtatása (${{ matrix.browser }})
+        working-directory: ./tests/e2e
+        env:
+          CI: true
+        run: npx playwright test --project=${{ matrix.browser }}
+
+      - name: 📊 E2E teszt riport feltöltése
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report-${{ matrix.browser }}
+          path: tests/e2e/playwright-report/
+          retention-days: 30
+
+      - name: 📸 Képek feltöltése hiba esetén
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-screenshots-${{ matrix.browser }}
+          path: tests/e2e/test-results/
+          retention-days: 7
+
+  e2e-summary:
+    runs-on: ubuntu-latest
+    needs: e2e-tests
+    if: always()
+
+    steps:
+      - name: 📈 E2E teszt összefoglaló
+        run: |
+          echo "## 🎭 E2E Teszt Összefoglaló" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Böngésző | Státusz |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Chromium | ${{ needs.e2e-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Firefox | ${{ needs.e2e-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📊 **Riportok az Artifacts-ben találhatók**" >> $GITHUB_STEP_SUMMARY

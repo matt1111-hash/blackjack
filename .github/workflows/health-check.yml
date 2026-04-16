@@ -1,0 +1,146 @@
+name: 🏥 Kód Egészségügyi Ellenőrzés
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Heti egészségügyi jelentés minden hétfőn 9:00-kor
+    - cron: '0 9 * * MON'
+  workflow_dispatch:
+    # Manuális indítás lehetősége
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.9, "3.10", "3.11", "3.12"]
+
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    steps:
+    - name: 📥 Kód letöltése
+      uses: actions/checkout@v4
+
+    - name: 🐍 Python ${{ matrix.python-version }} beállítása
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: 📦 Pip frissítése
+      run: |
+        python -m pip install --upgrade pip
+
+    - name: 🛠️ Függőségek telepítése
+      run: |
+        pip install -r requirements.txt
+        pip install pytest pytest-cov ruff mypy radon bandit[toml] tox
+
+    - name: 📊 Gyors egészségügyi ellenőrzés
+      run: |
+        echo "🚀 Gyors health check indítása..."
+
+        # Test coverage
+        pytest -q --cov=src --cov-report=term:skip-covered --cov-report=xml:coverage.xml || true
+
+        # Code quality
+        ruff check src tests --output-format=github || true
+
+        # Type checking
+        mypy src --ignore-missing-imports || true
+
+        # Security scan
+        bandit -r src -f json -o bandit-report.json || true
+        bandit -r src || true
+
+        echo "✅ Gyors ellenőrzés befejezve!"
+
+    - name: 🔬 Teljes fejlett elemzés
+      if: matrix.python-version == '3.11'  # Csak egy verzión fusson a teljes
+      run: |
+        echo "🧬 Fejlett health check indítása..."
+        python tools/advanced_health_check.py || true
+
+    - name: 📋 Coverage riport feltöltése
+      if: matrix.python-version == '3.11'
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+    - name: 📊 Riportok artifact-ként mentése
+      if: matrix.python-version == '3.11'
+      uses: actions/upload-artifact@v4
+      with:
+        name: health-reports
+        path: |
+          analysis_out/
+          coverage.xml
+          bandit-report.json
+        retention-days: 30
+
+    - name: 💬 PR komment a health score-ral
+      if: github.event_name == 'pull_request' && matrix.python-version == '3.11'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const path = 'analysis_out/health_data.json';
+
+          if (fs.existsSync(path)) {
+            const healthData = JSON.parse(fs.readFileSync(path, 'utf8'));
+            const score = healthData.overall_health_score.toFixed(1);
+            const totalModules = healthData.total_modules;
+
+            let scoreEmoji = '🟢';
+            if (score < 80) scoreEmoji = '🟡';
+            if (score < 60) scoreEmoji = '🔴';
+
+            const body = `## ${scoreEmoji} Kód Egészségügyi Jelentés
+
+            **Átlagos Health Score:** ${score}/100
+            **Elemzett modulok:** ${totalModules}
+            **Időbélyeg:** ${healthData.timestamp}
+
+            ### 📊 Összefoglaló
+            ${score >= 80 ? '✅ Kiváló kód minőség!' : ''}
+            ${score >= 60 && score < 80 ? '⚠️ Közepes kód minőség - van mit javítani' : ''}
+            ${score < 60 ? '🚨 Gyenge kód minőség - azonnali javítás szükséges!' : ''}
+
+            📁 [Részletes HTML riport letöltése](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+          }
+
+  health-summary:
+    runs-on: ubuntu-latest
+    needs: health-check
+    if: always()
+
+    steps:
+    - name: 📈 Egészségügyi összefoglaló
+      run: |
+        echo "## 🏥 Health Check Összefoglaló" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Python verzió | Státusz |" >> $GITHUB_STEP_SUMMARY
+        echo "|---------------|---------|" >> $GITHUB_STEP_SUMMARY
+        echo "| 3.9 | ${{ needs.health-check.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| 3.10 | ${{ needs.health-check.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| 3.11 | ${{ needs.health-check.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| 3.12 | ${{ needs.health-check.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "📊 **Riportok az Artifacts-ben találhatók**" >> $GITHUB_STEP_SUMMARY
