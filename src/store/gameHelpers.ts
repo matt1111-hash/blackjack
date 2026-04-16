@@ -67,7 +67,7 @@ function isValidCard(candidate: unknown): candidate is Card {
 }
 
 function getConfiguredShoe(): Card[] | null {
-  if (typeof window === 'undefined' || import.meta.env.MODE !== 'test') {
+  if (typeof window === 'undefined' || !(import.meta.env.VITE_E2E || import.meta.env.MODE === 'test')) {
     return null;
   }
 
