@@ -1,5 +1,5 @@
 import type { Card, Hand } from '../types';
-import { calculateHandValue, isBusted, isBlackjack, isSoftHand } from './hand';
+import { calculateHandValue, isBusted, isBlackjack, calculateHandDetails } from './hand';
 
 export const DEALER_STAND_VALUE = 17;
 
@@ -17,18 +17,16 @@ export function dealerPlay(dealerHand: Hand, shoe: Card[]): { hand: Hand; remain
   // Reveal hole card
   hand.cards = hand.cards.map((c, i) => (i === 1 ? { ...c, faceUp: true } : c));
 
-  let handValue = calculateHandValue(hand.cards);
-  let soft = isSoftHand(hand.cards);
+  let details = calculateHandDetails(hand.cards);
 
-  while (shouldDealerHit(handValue, soft)) {
+  while (shouldDealerHit(details.value, details.isSoft)) {
     const dealResult = dealOneCard(remainingShoe);
     if (!dealResult) break;
 
     const [newCard, remaining] = dealResult;
     hand.cards.push(newCard);
     remainingShoe = remaining;
-    handValue = calculateHandValue(hand.cards);
-    soft = isSoftHand(hand.cards);
+    details = calculateHandDetails(hand.cards);
   }
 
   hand.isBusted = isBusted(hand.cards);

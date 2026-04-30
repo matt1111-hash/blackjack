@@ -1,7 +1,7 @@
 import type { Card, Hand, GamePhase } from '../types';
 import { createShoe, shuffle, dealCard } from '../logic/deck';
 import { isBlackjack } from '../logic/hand';
-import { dealerPlay, calculateResults, applyPayouts } from '../logic/rules';
+import { dealerPlay, calculateResults, applyPayouts, type RoundResult } from '../logic/rules';
 
 export const INITIAL_BALANCE = 5000;
 export const SHOE_DECKS = 6;
@@ -9,12 +9,6 @@ export const E2E_SHOE_STORAGE_KEY = 'blackjack:e2e-shoe';
 
 const VALID_SUITS = new Set(['hearts', 'diamonds', 'clubs', 'spades']);
 const VALID_RANKS = new Set(['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']);
-
-export interface RoundResult {
-  playerHandIndex: number;
-  result: 'win' | 'lose' | 'push' | 'blackjack';
-  payout: number;
-}
 
 export interface GameState {
   // Balance

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   getCardValue,
   calculateHandValue,
+  calculateHandDetails,
   isSoftHand,
   isBusted,
   isBlackjack,
@@ -228,5 +229,55 @@ describe('createHand', () => {
   it('should accept different bet amounts', () => {
     expect(createHand(25).bet).toBe(25);
     expect(createHand(500).bet).toBe(500);
+  });
+});
+
+describe('calculateHandDetails', () => {
+  it('should return 0 value and false isSoft for empty hand', () => {
+    const details = calculateHandDetails([]);
+    expect(details.value).toBe(0);
+    expect(details.isSoft).toBe(false);
+  });
+
+  it('should return soft=true for A + 6 (soft 17)', () => {
+    const cards: Card[] = [
+      { suit: 'hearts', rank: 'A', faceUp: true },
+      { suit: 'spades', rank: '6', faceUp: true },
+    ];
+    const details = calculateHandDetails(cards);
+    expect(details.value).toBe(17);
+    expect(details.isSoft).toBe(true);
+  });
+
+  it('should return soft=false for hard hand (9 + 8)', () => {
+    const cards: Card[] = [
+      { suit: 'hearts', rank: '9', faceUp: true },
+      { suit: 'spades', rank: '8', faceUp: true },
+    ];
+    const details = calculateHandDetails(cards);
+    expect(details.value).toBe(17);
+    expect(details.isSoft).toBe(false);
+  });
+
+  it('should handle multiple Aces correctly', () => {
+    const cards: Card[] = [
+      { suit: 'hearts', rank: 'A', faceUp: true },
+      { suit: 'spades', rank: 'A', faceUp: true },
+      { suit: 'clubs', rank: '9', faceUp: true },
+    ];
+    const details = calculateHandDetails(cards);
+    expect(details.value).toBe(21);
+    expect(details.isSoft).toBe(true);
+  });
+
+  it('should return soft=false for busted hand', () => {
+    const cards: Card[] = [
+      { suit: 'hearts', rank: 'K', faceUp: true },
+      { suit: 'spades', rank: 'Q', faceUp: true },
+      { suit: 'clubs', rank: '5', faceUp: true },
+    ];
+    const details = calculateHandDetails(cards);
+    expect(details.value).toBe(25);
+    expect(details.isSoft).toBe(false);
   });
 });
