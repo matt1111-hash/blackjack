@@ -1,4 +1,4 @@
-import type { Card, Hand, GamePhase } from '../types';
+import type { Card, Hand, GamePhase, GameError } from '../types';
 import { createShoe, shuffle, dealCardOrThrow } from '../logic/deck';
 import { isBlackjack } from '../logic/hand';
 import { dealerPlay, calculateResults, applyPayouts, type RoundResult } from '../logic/rules';
@@ -32,6 +32,9 @@ export interface GameState {
   // Round results (for display)
   roundResults: RoundResult[] | null;
 
+  // Error state
+  error: GameError | null;
+
   // Actions
   placeBet: (amount: number) => void;
   deal: () => void;
@@ -43,6 +46,7 @@ export interface GameState {
   declineInsurance: () => void;
   newRound: () => void;
   resetBalance: () => void;
+  clearError: () => void;
 }
 
 function isValidCard(candidate: unknown): candidate is Card {

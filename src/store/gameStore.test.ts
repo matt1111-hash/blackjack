@@ -6,11 +6,20 @@ import type { Card } from '../types';
 const mockCard = (rank: Card['rank'], suit: Card['suit'] = 'hearts'): Card => ({ rank, suit, faceUp: true });
 
 describe('useGameStore', () => {
-  const initialState = useGameStore.getState();
-
   beforeEach(() => {
-    // Reset Zustand store to initial state
-    useGameStore.setState(initialState, true);
+    // Reset Zustand store data fields (keep actions intact)
+    useGameStore.setState({
+      balance: INITIAL_BALANCE,
+      shoe: useGameStore.getState().shoe.length > 0 ? useGameStore.getState().shoe : [],
+      shoePenetration: 0,
+      playerHands: [],
+      dealerHand: { cards: [], bet: 0, isDoubled: false, isStanding: false, isBusted: false, isBlackjack: false },
+      activeHandIndex: 0,
+      phase: 'betting',
+      currentBet: 0,
+      roundResults: null,
+      error: null,
+    });
   });
 
   it('initializes with correct default state', () => {
@@ -195,6 +204,7 @@ describe('useGameStore', () => {
       useGameStore.setState({
         balance: 1000,
         currentBet: 100,
+        phase: 'insurance',
         dealerHand: {
           cards: [mockCard('A'), mockCard('10')],
           bet: 0,
@@ -228,6 +238,7 @@ describe('useGameStore', () => {
       useGameStore.setState({
         balance: 1000,
         currentBet: 100,
+        phase: 'insurance',
         dealerHand: {
           cards: [mockCard('A'), mockCard('5')],
           bet: 0,
@@ -256,6 +267,7 @@ describe('useGameStore', () => {
       useGameStore.setState({
         balance: 1000,
         currentBet: 100,
+        phase: 'insurance',
         dealerHand: {
           cards: [mockCard('A'), mockCard('10')],
           bet: 0,
@@ -284,6 +296,7 @@ describe('useGameStore', () => {
       useGameStore.setState({
         balance: 1000,
         currentBet: 100,
+        phase: 'insurance',
         dealerHand: {
           cards: [mockCard('A'), mockCard('5')],
           bet: 0,
@@ -311,7 +324,7 @@ describe('useGameStore', () => {
 
   describe('newRound', () => {
     it('resets phase and hands', () => {
-      useGameStore.getState().placeBet(100);
+      useGameStore.setState({ phase: 'finished', currentBet: 100 });
       useGameStore.getState().newRound();
       const state = useGameStore.getState();
       expect(state.phase).toBe('betting');

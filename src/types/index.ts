@@ -23,6 +23,11 @@ export type HandResult = 'win' | 'lose' | 'push' | 'blackjack';
 // Game Types
 export type GamePhase = 'betting' | 'insurance' | 'playing' | 'finished';
 
+export interface GameError {
+  action: string;
+  message: string;
+}
+
 // Chip Types
 export type ChipValue = 1 | 5 | 25 | 100 | 500;
 
