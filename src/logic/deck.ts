@@ -42,3 +42,10 @@ export function dealCard(shoe: Card[], faceUp = true): [Card, Card[]] | undefine
   if (!card) return undefined;
   return [{ ...card, faceUp }, remaining];
 }
+
+/** Deals a card or throws if shoe is empty */
+export function dealCardOrThrow(shoe: Card[], faceUp = true): [Card, Card[]] {
+  const result = dealCard(shoe, faceUp);
+  if (!result) throw new Error('Shoe is empty: cannot deal card');
+  return result;
+}

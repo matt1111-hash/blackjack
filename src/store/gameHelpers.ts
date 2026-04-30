@@ -1,5 +1,5 @@
 import type { Card, Hand, GamePhase } from '../types';
-import { createShoe, shuffle, dealCard } from '../logic/deck';
+import { createShoe, shuffle, dealCardOrThrow } from '../logic/deck';
 import { isBlackjack } from '../logic/hand';
 import { dealerPlay, calculateResults, applyPayouts, type RoundResult } from '../logic/rules';
 
@@ -88,10 +88,10 @@ export function createFreshShoe(): Card[] {
 }
 
 export function dealInitialHands(shoe: Card[], bet: number): { playerHand: Hand; dealerHand: Hand; remainingShoe: Card[] } {
-  const [playerCard1, shoe1] = dealCard(shoe, true)!;
-  const [dealerCard1, shoe2] = dealCard(shoe1, true)!;
-  const [playerCard2, shoe3] = dealCard(shoe2, true)!;
-  const [dealerCard2, remainingShoe] = dealCard(shoe3, false)!;
+  const [playerCard1, shoe1] = dealCardOrThrow(shoe, true);
+  const [dealerCard1, shoe2] = dealCardOrThrow(shoe1, true);
+  const [playerCard2, shoe3] = dealCardOrThrow(shoe2, true);
+  const [dealerCard2, remainingShoe] = dealCardOrThrow(shoe3, false);
 
   const playerHand: Hand = {
     cards: [playerCard1, playerCard2],

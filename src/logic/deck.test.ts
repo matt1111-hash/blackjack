@@ -4,6 +4,7 @@ import {
   createShoe,
   shuffle,
   dealCard,
+  dealCardOrThrow,
 } from './deck';
 
 describe('createDeck', () => {
@@ -113,6 +114,19 @@ describe('dealCard', () => {
     const [card] = dealCard(deck) as [import('../types').Card, import('../types').Card[]];
     expect(card.suit).toBeDefined();
     expect(card.rank).toBeDefined();
+  });
+});
+
+describe('dealCardOrThrow', () => {
+  it('should deal a card from non-empty shoe', () => {
+    const shoe = createShoe(1);
+    const [card, remaining] = dealCardOrThrow(shoe);
+    expect(card).toBeDefined();
+    expect(remaining).toHaveLength(shoe.length - 1);
+  });
+
+  it('should throw on empty shoe', () => {
+    expect(() => dealCardOrThrow([])).toThrow('Shoe is empty');
   });
 });
 

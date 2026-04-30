@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Hand, GamePhase } from '../types';
 import type { GameState } from './gameHelpers';
-import { dealCard } from '../logic/deck';
+import { dealCardOrThrow } from '../logic/deck';
 import { isBlackjack, createHand, isBusted } from '../logic/hand';
 import { calculateResults, applyPayouts, type RoundResult } from '../logic/rules';
 import {
@@ -129,7 +129,7 @@ export const useGameStore = create<GameState>()(
         const hand = playerHands[activeHandIndex];
         if (!hand || hand.isStanding || hand.isDoubled) return;
 
-        const [newCard, remainingShoe] = dealCard(shoe, true)!;
+        const [newCard, remainingShoe] = dealCardOrThrow(shoe, true);
         const newHand = {
           ...hand,
           cards: [...hand.cards, newCard],
@@ -184,7 +184,7 @@ export const useGameStore = create<GameState>()(
         const hand = playerHands[activeHandIndex];
         if (!hand || hand.cards.length !== 2 || balance < hand.bet) return;
 
-        const [newCard, remainingShoe] = dealCard(shoe, true)!;
+        const [newCard, remainingShoe] = dealCardOrThrow(shoe, true);
         const newHand = {
           ...hand,
           cards: [...hand.cards, newCard],
@@ -220,8 +220,8 @@ export const useGameStore = create<GameState>()(
         const [card1, card2] = hand.cards;
         if (card1.rank !== card2.rank) return;
 
-        const [newCard1, shoe1] = dealCard(shoe, true)!;
-        const [newCard2, shoe2] = dealCard(shoe1, true)!;
+        const [newCard1, shoe1] = dealCardOrThrow(shoe, true);
+        const [newCard2, shoe2] = dealCardOrThrow(shoe1, true);
 
         const newHand1: Hand = {
           cards: [card1, newCard1],
