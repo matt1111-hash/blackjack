@@ -41,6 +41,7 @@ interface SoundManager {
   toggleMute: () => void;
   setVolume: (volume: number) => void;
   preloaded: boolean;
+  destroy: () => void;
 }
 
 function createSoundManager(): SoundManager {
@@ -127,6 +128,10 @@ function createSoundManager(): SoundManager {
       Howler.volume(masterVolume);
     },
     preloaded: preloadedSet.size > 0,
+    destroy: () => {
+      sounds.forEach((sound) => sound.unload());
+      sounds.clear();
+    },
   };
 }
 
@@ -136,6 +141,12 @@ let soundManager: SoundManager | null = null;
 function getSoundManager(): SoundManager {
   if (!soundManager) {
     soundManager = createSoundManager();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeunload', () => {
+        soundManager?.destroy();
+        soundManager = null;
+      });
+    }
   }
   return soundManager;
 }
@@ -181,10 +192,22 @@ export function useSound() {
     manager().setVolume(volume);
   }, [manager]);
 
-  // Preload sounds on first user interaction
+  // Preload sounds using idle time or first interaction fallback
   useEffect(() => {
-    const handleFirstInteraction = () => {
+    const preloadSounds = () => {
       preload();
+    };
+
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      const idleId = (window as unknown as { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number })
+        .requestIdleCallback(preloadSounds, { timeout: 3000 });
+      return () => {
+        (window as unknown as { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleId);
+      };
+    }
+
+    const handleFirstInteraction = () => {
+      preloadSounds();
       document.removeEventListener('click', handleFirstInteraction);
     };
     document.addEventListener('click', handleFirstInteraction);
