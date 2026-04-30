@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useGameStore } from '../../store/gameStore';
 import { useGameSounds } from '../../hooks/useSound';
 import { DealerArea } from './DealerArea';
@@ -19,6 +19,7 @@ export function BlackjackTable() {
     activeHandIndex,
     phase,
     roundResults,
+    error,
     placeBet,
     deal,
     hit,
@@ -28,7 +29,27 @@ export function BlackjackTable() {
     buyInsurance,
     declineInsurance,
     newRound,
+    clearError,
   } = useGameStore();
+
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (error) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        clearError();
+      }, 3000);
+    }
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [error, clearError]);
+
+  const dismissError = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    clearError();
+  }, [clearError]);
 
   const {
     playDealStart,
@@ -180,6 +201,20 @@ export function BlackjackTable() {
           <div className="blackjack-table__new-round-btn">
             <button className="deal-button" onClick={handleNewRound} data-testid="new-round-button" aria-label="New round">
               NEW ROUND
+            </button>
+          </div>
+        )}
+
+        {/* Error toast */}
+        {error && (
+          <div className="blackjack-table__error" role="alert" data-testid="game-error">
+            <span className="blackjack-table__error-text">{error.message}</span>
+            <button
+              className="blackjack-table__error-dismiss"
+              onClick={dismissError}
+              aria-label="Dismiss error"
+            >
+              ×
             </button>
           </div>
         )}

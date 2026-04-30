@@ -6,30 +6,20 @@ import {
   canPlayerDouble,
   canPlayerSplit,
 } from './rules';
-import type { Card, Hand } from '../types';
+import type { Card } from '../types';
+import { mockCard, mockHand } from '../test-utils';
 
-function createTestCard(suit: string, rank: string, faceUp = true): Card {
-  return { suit: suit as Card['suit'], rank: rank as Card['rank'], faceUp };
-}
-
-function createTestHand(cards: Card[], bet = 100): Hand {
-  return {
-    cards,
-    bet,
-    isDoubled: false,
-    isStanding: false,
-    isBusted: false,
-    isBlackjack: false,
-  };
+function createTestShoe(count: number, rank: Card['rank'] = '5', suit: Card['suit'] = 'diamonds'): Card[] {
+  return Array(count).fill(mockCard(rank, suit));
 }
 
 describe('dealerPlay', () => {
   it('should stand on hard 17', () => {
-    const hand = createTestHand([
-      createTestCard('hearts', 'K'),
-      createTestCard('spades', '7'),
+    const hand = mockHand([
+      mockCard('K', 'hearts'),
+      mockCard('7', 'spades'),
     ]);
-    const shoe = Array(50).fill(createTestCard('diamonds', '5'));
+    const shoe = createTestShoe(50);
 
     const { hand: result } = dealerPlay(hand, shoe);
 
@@ -38,11 +28,11 @@ describe('dealerPlay', () => {
   });
 
   it('should stand on soft 17 (dealer stands on soft 17)', () => {
-    const hand = createTestHand([
-      createTestCard('hearts', 'A'),
-      createTestCard('spades', '6'),
+    const hand = mockHand([
+      mockCard('A', 'hearts'),
+      mockCard('6', 'spades'),
     ]);
-    const shoe = Array(50).fill(createTestCard('diamonds', '5'));
+    const shoe = createTestShoe(50);
 
     const { hand: result } = dealerPlay(hand, shoe);
 
@@ -50,11 +40,11 @@ describe('dealerPlay', () => {
   });
 
   it('should hit on hard 16', () => {
-    const hand = createTestHand([
-      createTestCard('hearts', 'K'),
-      createTestCard('spades', '6'),
+    const hand = mockHand([
+      mockCard('K', 'hearts'),
+      mockCard('6', 'spades'),
     ]);
-    const shoe = [createTestCard('diamonds', '5'), ...Array(50).fill(createTestCard('clubs', '2'))];
+    const shoe = [mockCard('5', 'diamonds'), ...createTestShoe(50, '2', 'clubs')];
 
     const { hand: result } = dealerPlay(hand, shoe);
 
@@ -63,11 +53,11 @@ describe('dealerPlay', () => {
   });
 
   it('should reveal hole card after playing', () => {
-    const hand = createTestHand([
-      createTestCard('hearts', 'K', true),
-      createTestCard('spades', '7', false),
+    const hand = mockHand([
+      mockCard('K', 'hearts', true),
+      mockCard('7', 'spades', false),
     ]);
-    const shoe = Array(50).fill(createTestCard('diamonds', '5'));
+    const shoe = createTestShoe(50);
 
     const { hand: result } = dealerPlay(hand, shoe);
 
@@ -75,44 +65,44 @@ describe('dealerPlay', () => {
   });
 
   it('should handle bust', () => {
-    const hand = createTestHand([
-      createTestCard('hearts', 'K'),
-      createTestCard('spades', '6'),
+    const hand = mockHand([
+      mockCard('K', 'hearts'),
+      mockCard('6', 'spades'),
     ]);
-    const shoe = [createTestCard('diamonds', 'K'), ...Array(50).fill(createTestCard('clubs', '2'))];
+    const shoe = [mockCard('K', 'diamonds'), ...createTestShoe(50, '2', 'clubs')];
 
     const { hand: result } = dealerPlay(hand, shoe);
 
     expect(result.isBusted).toBe(true);
-    expect(result.isStanding).toBe(true); // Dealer is done after busting
+    expect(result.isStanding).toBe(true);
   });
 });
 
 describe('calculateResults', () => {
   it('should return win when player has higher value', () => {
-    const playerHand = createTestHand([
-      createTestCard('hearts', 'K'),
-      createTestCard('spades', '9'),
+    const playerHand = mockHand([
+      mockCard('K', 'hearts'),
+      mockCard('9', 'spades'),
     ]);
-    const dealerHand = createTestHand([
-      createTestCard('clubs', 'Q'),
-      createTestCard('diamonds', '7'),
+    const dealerHand = mockHand([
+      mockCard('Q', 'clubs'),
+      mockCard('7', 'diamonds'),
     ]);
 
     const results = calculateResults([playerHand], dealerHand);
 
     expect(results[0].result).toBe('win');
-    expect(results[0].payout).toBe(1); // 1:1 = 100% profit
+    expect(results[0].payout).toBe(1);
   });
 
   it('should return lose when dealer has higher value', () => {
-    const playerHand = createTestHand([
-      createTestCard('hearts', 'K'),
-      createTestCard('spades', '8'),
+    const playerHand = mockHand([
+      mockCard('K', 'hearts'),
+      mockCard('8', 'spades'),
     ]);
-    const dealerHand = createTestHand([
-      createTestCard('clubs', 'Q'),
-      createTestCard('diamonds', '9'),
+    const dealerHand = mockHand([
+      mockCard('Q', 'clubs'),
+      mockCard('9', 'diamonds'),
     ]);
 
     const results = calculateResults([playerHand], dealerHand);
@@ -122,13 +112,13 @@ describe('calculateResults', () => {
   });
 
   it('should return push on tie', () => {
-    const playerHand = createTestHand([
-      createTestCard('hearts', 'K'),
-      createTestCard('spades', '9'),
+    const playerHand = mockHand([
+      mockCard('K', 'hearts'),
+      mockCard('9', 'spades'),
     ]);
-    const dealerHand = createTestHand([
-      createTestCard('clubs', 'K'),
-      createTestCard('diamonds', '9'),
+    const dealerHand = mockHand([
+      mockCard('K', 'clubs'),
+      mockCard('9', 'diamonds'),
     ]);
 
     const results = calculateResults([playerHand], dealerHand);
@@ -138,30 +128,30 @@ describe('calculateResults', () => {
   });
 
   it('should return blackjack for natural', () => {
-    const playerHand = createTestHand([
-      createTestCard('hearts', 'A'),
-      createTestCard('spades', 'K'),
-    ]);
-    playerHand.isBlackjack = true;
-    const dealerHand = createTestHand([
-      createTestCard('clubs', 'Q'),
-      createTestCard('diamonds', '8'),
+    const playerHand = mockHand(
+      [mockCard('A', 'hearts'), mockCard('K', 'spades')],
+      100,
+      { isBlackjack: true },
+    );
+    const dealerHand = mockHand([
+      mockCard('Q', 'clubs'),
+      mockCard('8', 'diamonds'),
     ]);
 
     const results = calculateResults([playerHand], dealerHand);
 
     expect(results[0].result).toBe('blackjack');
-    expect(results[0].payout).toBe(1.5); // 3:2 = 150% profit
+    expect(results[0].payout).toBe(1.5);
   });
 
   it('should handle dealer blackjack vs player non-blackjack', () => {
-    const playerHand = createTestHand([
-      createTestCard('hearts', 'K'),
-      createTestCard('spades', '9'),
+    const playerHand = mockHand([
+      mockCard('K', 'hearts'),
+      mockCard('9', 'spades'),
     ]);
-    const dealerHand = createTestHand([
-      createTestCard('clubs', 'A'),
-      createTestCard('diamonds', 'K'), // Blackjack
+    const dealerHand = mockHand([
+      mockCard('A', 'clubs'),
+      mockCard('K', 'diamonds'),
     ]);
 
     const results = calculateResults([playerHand], dealerHand);
@@ -171,32 +161,31 @@ describe('calculateResults', () => {
   });
 
   it('should handle double down payout', () => {
-    const playerHand = createTestHand([
-      createTestCard('hearts', 'K'),
-      createTestCard('spades', '9'),
-    ]);
-    playerHand.isDoubled = true;
-    const dealerHand = createTestHand([
-      createTestCard('clubs', 'Q'),
-      createTestCard('diamonds', '7'),
+    const playerHand = mockHand(
+      [mockCard('K', 'hearts'), mockCard('9', 'spades')],
+      100,
+      { isDoubled: true },
+    );
+    const dealerHand = mockHand([
+      mockCard('Q', 'clubs'),
+      mockCard('7', 'diamonds'),
     ]);
 
     const results = calculateResults([playerHand], dealerHand);
 
     expect(results[0].result).toBe('win');
-    expect(results[0].payout).toBe(1); // 1:1 profit (bet is already doubled in hand.bet)
+    expect(results[0].payout).toBe(1);
   });
 
   it('should handle busted player hand', () => {
-    const playerHand = createTestHand([
-      createTestCard('hearts', 'K'),
-      createTestCard('spades', 'K'),
-      createTestCard('diamonds', '5'),
-    ]);
-    playerHand.isBusted = true;
-    const dealerHand = createTestHand([
-      createTestCard('clubs', 'Q'),
-      createTestCard('diamonds', '7'),
+    const playerHand = mockHand(
+      [mockCard('K', 'hearts'), mockCard('K', 'spades'), mockCard('5', 'diamonds')],
+      100,
+      { isBusted: true },
+    );
+    const dealerHand = mockHand([
+      mockCard('Q', 'clubs'),
+      mockCard('7', 'diamonds'),
     ]);
 
     const results = calculateResults([playerHand], dealerHand);
@@ -206,53 +195,52 @@ describe('calculateResults', () => {
   });
 
   it('should handle multiple hands', () => {
-    const hand1 = createTestHand([createTestCard('hearts', 'K'), createTestCard('spades', '9')], 100); // 19
-    const hand2 = createTestHand([createTestCard('clubs', 'Q'), createTestCard('diamonds', '8')], 50); // 18
-    const dealerHand = createTestHand([createTestCard('hearts', 'K'), createTestCard('diamonds', '9')]); // 19
+    const hand1 = mockHand([mockCard('K', 'hearts'), mockCard('9', 'spades')], 100);
+    const hand2 = mockHand([mockCard('Q', 'clubs'), mockCard('8', 'diamonds')], 50);
+    const dealerHand = mockHand([mockCard('K', 'hearts'), mockCard('9', 'diamonds')]);
 
     const results = calculateResults([hand1, hand2], dealerHand);
 
     expect(results).toHaveLength(2);
-    expect(results[0].result).toBe('push'); // 19 vs 19
-    expect(results[1].result).toBe('lose'); // 18 vs 19
+    expect(results[0].result).toBe('push');
+    expect(results[1].result).toBe('lose');
   });
 });
 
 describe('applyPayouts', () => {
   it('should add winnings to balance', () => {
     const balance = 1000;
-    const hands = [createTestHand([createTestCard('hearts', 'K'), createTestCard('spades', '9')], 100)];
+    const hands = [mockHand([mockCard('K', 'hearts'), mockCard('9', 'spades')], 100)];
     const results = [{ playerHandIndex: 0, result: 'win' as const, payout: 1 }];
 
     const newBalance = applyPayouts(balance, results, hands);
 
-    expect(newBalance).toBe(1200); // 1000 + bet(100) + profit(100) = 1200
+    expect(newBalance).toBe(1200);
   });
 
   it('should handle blackjack payout (3:2)', () => {
     const balance = 1000;
-    const hands = [createTestHand([createTestCard('hearts', 'A'), createTestCard('spades', 'K')], 100)];
-    hands[0].isBlackjack = true;
+    const hands = [mockHand([mockCard('A', 'hearts'), mockCard('K', 'spades')], 100, { isBlackjack: true })];
     const results = [{ playerHandIndex: 0, result: 'blackjack' as const, payout: 1.5 }];
 
     const newBalance = applyPayouts(balance, results, hands);
 
-    expect(newBalance).toBe(1250); // 1000 + bet(100) + profit(150) = 1250
+    expect(newBalance).toBe(1250);
   });
 
   it('should return bet on push', () => {
     const balance = 1000;
-    const hands = [createTestHand([createTestCard('hearts', 'K'), createTestCard('spades', '9')], 100)];
+    const hands = [mockHand([mockCard('K', 'hearts'), mockCard('9', 'spades')], 100)];
     const results = [{ playerHandIndex: 0, result: 'push' as const, payout: 0 }];
 
     const newBalance = applyPayouts(balance, results, hands);
 
-    expect(newBalance).toBe(1100); // 1000 + bet(100) returned = 1100
+    expect(newBalance).toBe(1100);
   });
 
   it('should handle loss (bet already deducted)', () => {
     const balance = 1000;
-    const hands = [createTestHand([createTestCard('hearts', 'K'), createTestCard('spades', '8')], 100)];
+    const hands = [mockHand([mockCard('K', 'hearts'), mockCard('8', 'spades')], 100)];
     const results = [{ playerHandIndex: 0, result: 'lose' as const, payout: 0 }];
 
     const newBalance = applyPayouts(balance, results, hands);
@@ -263,38 +251,38 @@ describe('applyPayouts', () => {
 
 describe('canPlayerDouble', () => {
   it('should return true for 2-card hand with sufficient balance', () => {
-    const hand = createTestHand([
-      createTestCard('hearts', 'K'),
-      createTestCard('spades', '7'),
+    const hand = mockHand([
+      mockCard('K', 'hearts'),
+      mockCard('7', 'spades'),
     ]);
 
     expect(canPlayerDouble(hand, 500)).toBe(true);
   });
 
   it('should return false for hand with more than 2 cards', () => {
-    const hand = createTestHand([
-      createTestCard('hearts', 'K'),
-      createTestCard('spades', '7'),
-      createTestCard('diamonds', '3'),
+    const hand = mockHand([
+      mockCard('K', 'hearts'),
+      mockCard('7', 'spades'),
+      mockCard('3', 'diamonds'),
     ]);
 
     expect(canPlayerDouble(hand, 500)).toBe(false);
   });
 
   it('should return false when already doubled', () => {
-    const hand = createTestHand([
-      createTestCard('hearts', 'K'),
-      createTestCard('spades', '7'),
-    ]);
-    hand.isDoubled = true;
+    const hand = mockHand(
+      [mockCard('K', 'hearts'), mockCard('7', 'spades')],
+      100,
+      { isDoubled: true },
+    );
 
     expect(canPlayerDouble(hand, 500)).toBe(false);
   });
 
   it('should return false when insufficient balance', () => {
-    const hand = createTestHand([
-      createTestCard('hearts', 'K'),
-      createTestCard('spades', '7'),
+    const hand = mockHand([
+      mockCard('K', 'hearts'),
+      mockCard('7', 'spades'),
     ]);
 
     expect(canPlayerDouble(hand, 50)).toBe(false);
@@ -303,37 +291,37 @@ describe('canPlayerDouble', () => {
 
 describe('canPlayerSplit', () => {
   it('should return true for matching rank cards', () => {
-    const hand = createTestHand([
-      createTestCard('hearts', 'K'),
-      createTestCard('spades', 'K'),
+    const hand = mockHand([
+      mockCard('K', 'hearts'),
+      mockCard('K', 'spades'),
     ]);
 
     expect(canPlayerSplit(hand, 500)).toBe(true);
   });
 
   it('should return false for different rank cards', () => {
-    const hand = createTestHand([
-      createTestCard('hearts', 'K'),
-      createTestCard('spades', 'Q'),
+    const hand = mockHand([
+      mockCard('K', 'hearts'),
+      mockCard('Q', 'spades'),
     ]);
 
     expect(canPlayerSplit(hand, 500)).toBe(false);
   });
 
   it('should return false when insufficient balance', () => {
-    const hand = createTestHand([
-      createTestCard('hearts', 'K'),
-      createTestCard('spades', 'K'),
+    const hand = mockHand([
+      mockCard('K', 'hearts'),
+      mockCard('K', 'spades'),
     ]);
 
     expect(canPlayerSplit(hand, 50)).toBe(false);
   });
 
   it('should return false for more than 2 cards', () => {
-    const hand = createTestHand([
-      createTestCard('hearts', 'K'),
-      createTestCard('spades', 'K'),
-      createTestCard('diamonds', '3'),
+    const hand = mockHand([
+      mockCard('K', 'hearts'),
+      mockCard('K', 'spades'),
+      mockCard('3', 'diamonds'),
     ]);
 
     expect(canPlayerSplit(hand, 500)).toBe(false);

@@ -7,8 +7,13 @@ export function getCardValue(card: Card): number {
   return parseInt(card.rank, 10);
 }
 
-/** Calculates best hand value (adjusts Aces from 11 to 1 if needed) */
-export function calculateHandValue(cards: Card[]): number {
+export interface HandDetails {
+  value: number;
+  isSoft: boolean;
+}
+
+/** Shared calculation: value + soft flag, eliminates duplication */
+export function calculateHandDetails(cards: Card[]): HandDetails {
   let value = 0;
   let aces = 0;
 
@@ -22,25 +27,17 @@ export function calculateHandValue(cards: Card[]): number {
     aces--;
   }
 
-  return value;
+  return { value, isSoft: aces > 0 && value <= 21 };
+}
+
+/** Calculates best hand value (adjusts Aces from 11 to 1 if needed) */
+export function calculateHandValue(cards: Card[]): number {
+  return calculateHandDetails(cards).value;
 }
 
 /** Checks if hand is soft (has Ace counted as 11) */
 export function isSoftHand(cards: Card[]): boolean {
-  let value = 0;
-  let aces = 0;
-
-  for (const card of cards) {
-    value += getCardValue(card);
-    if (card.rank === 'A') aces++;
-  }
-
-  while (value > 21 && aces > 0) {
-    value -= 10;
-    aces--;
-  }
-
-  return aces > 0 && value <= 21;
+  return calculateHandDetails(cards).isSoft;
 }
 
 /** Checks if hand is busted */

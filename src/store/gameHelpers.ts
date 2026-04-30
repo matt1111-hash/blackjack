@@ -1,7 +1,7 @@
-import type { Card, Hand, GamePhase } from '../types';
-import { createShoe, shuffle, dealCard } from '../logic/deck';
+import type { Card, Hand, GamePhase, GameError } from '../types';
+import { createShoe, shuffle, dealCardOrThrow } from '../logic/deck';
 import { isBlackjack } from '../logic/hand';
-import { dealerPlay, calculateResults, applyPayouts } from '../logic/rules';
+import { dealerPlay, calculateResults, applyPayouts, type RoundResult } from '../logic/rules';
 
 export const INITIAL_BALANCE = 5000;
 export const SHOE_DECKS = 6;
@@ -9,12 +9,6 @@ export const E2E_SHOE_STORAGE_KEY = 'blackjack:e2e-shoe';
 
 const VALID_SUITS = new Set(['hearts', 'diamonds', 'clubs', 'spades']);
 const VALID_RANKS = new Set(['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']);
-
-export interface RoundResult {
-  playerHandIndex: number;
-  result: 'win' | 'lose' | 'push' | 'blackjack';
-  payout: number;
-}
 
 export interface GameState {
   // Balance
@@ -38,6 +32,9 @@ export interface GameState {
   // Round results (for display)
   roundResults: RoundResult[] | null;
 
+  // Error state
+  error: GameError | null;
+
   // Actions
   placeBet: (amount: number) => void;
   deal: () => void;
@@ -49,6 +46,7 @@ export interface GameState {
   declineInsurance: () => void;
   newRound: () => void;
   resetBalance: () => void;
+  clearError: () => void;
 }
 
 function isValidCard(candidate: unknown): candidate is Card {
@@ -67,7 +65,7 @@ function isValidCard(candidate: unknown): candidate is Card {
 }
 
 function getConfiguredShoe(): Card[] | null {
-  if (typeof window === 'undefined') {
+  if (typeof window === 'undefined' || !(import.meta.env.VITE_E2E || import.meta.env.MODE === 'test')) {
     return null;
   }
 
@@ -94,10 +92,10 @@ export function createFreshShoe(): Card[] {
 }
 
 export function dealInitialHands(shoe: Card[], bet: number): { playerHand: Hand; dealerHand: Hand; remainingShoe: Card[] } {
-  const [playerCard1, shoe1] = dealCard(shoe, true)!;
-  const [dealerCard1, shoe2] = dealCard(shoe1, true)!;
-  const [playerCard2, shoe3] = dealCard(shoe2, true)!;
-  const [dealerCard2, remainingShoe] = dealCard(shoe3, false)!;
+  const [playerCard1, shoe1] = dealCardOrThrow(shoe, true);
+  const [dealerCard1, shoe2] = dealCardOrThrow(shoe1, true);
+  const [playerCard2, shoe3] = dealCardOrThrow(shoe2, true);
+  const [dealerCard2, remainingShoe] = dealCardOrThrow(shoe3, false);
 
   const playerHand: Hand = {
     cards: [playerCard1, playerCard2],

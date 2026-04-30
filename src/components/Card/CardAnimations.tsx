@@ -1,5 +1,6 @@
 import { motion, type Variants } from 'framer-motion';
 import type { Card as CardType } from '../../types';
+import { CARD_FLIP_DURATION, HOLE_CARD_REVEAL_DURATION, DEAL_STAGGER_DELAY } from '../../constants/animations';
 import { Card } from './Card';
 import './CardAnimations.css';
 
@@ -43,11 +44,11 @@ const cardDealVariants: Variants = {
 const cardFlipVariants: Variants = {
   faceDown: {
     rotateY: 180,
-    transition: { duration: 0.4, ease: 'easeInOut' as const },
+    transition: { duration: CARD_FLIP_DURATION, ease: 'easeInOut' as const },
   },
   faceUp: {
     rotateY: 0,
-    transition: { duration: 0.4, ease: 'easeInOut' as const },
+    transition: { duration: CARD_FLIP_DURATION, ease: 'easeInOut' as const },
   },
 };
 
@@ -59,7 +60,7 @@ const holeCardRevealVariants: Variants = {
   },
   revealed: {
     rotateY: 0,
-    transition: { duration: 0.5, ease: 'easeOut' as const },
+    transition: { duration: HOLE_CARD_REVEAL_DURATION, ease: 'easeOut' as const },
   },
 };
 
@@ -78,7 +79,7 @@ export function CardAnimation({
   reveal = false,
   className = '',
 }: CardAnimationProps) {
-  const delay = dealing ? index * 0.15 : 0;
+  const delay = dealing ? index * DEAL_STAGGER_DELAY : 0;
 
   // Hole card (dealer second card)
   const isHoleCard = reveal && index === 1;
@@ -90,7 +91,7 @@ export function CardAnimation({
         variants={holeCardRevealVariants}
         initial="hidden"
         animate="revealed"
-        transition={{ delay: 0.5 }}
+        transition={{ delay: HOLE_CARD_REVEAL_DURATION }}
         style={{ transformStyle: 'preserve-3d' }}
       >
         <Card card={card} />

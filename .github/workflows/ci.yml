@@ -4,10 +4,14 @@ on:
   push:
     branches:
       - main
+      - refactor
   pull_request:
+    branches:
+      - main
+      - refactor
 
 jobs:
-  frontend-quality:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -30,7 +34,13 @@ jobs:
         run: npm run typecheck
 
       - name: Test with coverage
-        run: npm run test:coverage
+        run: npm run test -- --coverage --reporter=verbose
 
       - name: Build
         run: npm run build
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E
+        run: npx playwright test
