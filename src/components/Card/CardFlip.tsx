@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import type { Card as CardType } from '../../types';
+import { CARD_FLIP_DURATION } from '../../constants/animations';
 import { Card } from './Card';
 import './CardFlip.css';
 
@@ -17,7 +18,7 @@ export function CardFlip({ card, delay = 0, className = '', style }: CardFlipPro
       style={style}
       initial={false}
       animate={{ rotateY: card.faceUp ? 0 : 180 }}
-      transition={{ duration: 0.4, delay, ease: 'easeOut' }}
+      transition={{ duration: CARD_FLIP_DURATION, delay, ease: 'easeOut' }}
     >
       <div className="card-flip__inner">
         <div className="card-flip__front">
