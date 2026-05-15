@@ -95,6 +95,34 @@ if (failures.length > 0) {
 }
 ' "$LINES_PCT" "$MIN_LINES" "$FUNCTIONS_PCT" "$MIN_FUNCTIONS"
 
+MAX_LINES="${MAX_FILE_LINES:-300}"
+if [[ "$MODE" == "ci" && -n "${CI_MAX_FILE_LINES:-}" ]]; then
+  MAX_LINES="$CI_MAX_FILE_LINES"
+fi
+
+SIZE_PATHS_TO_CHECK=()
+for p in "${CHT_SIZE_PATHS[@]:-${SIZE_PATHS:-src}}"; do
+  SIZE_PATHS_TO_CHECK+=("$ROOT_DIR/$p")
+done
+
+echo
+echo "File size check ($MODE mode, max: $MAX_LINES lines)"
+
+OVERSIZED=()
+while IFS= read -r -d '' file; do
+  lines=$(wc -l < "$file")
+  if (( lines > MAX_LINES )); then
+    OVERSIZED+=("$file ($lines)")
+  fi
+done < <(find "${SIZE_PATHS_TO_CHECK[@]}" -type f \( -name "*.ts" -o -name "*.tsx" \) -print0)
+
+if (( ${#OVERSIZED[@]} > 0 )); then
+  echo "File size check failed: ${#OVERSIZED[@]} file(s) exceed $MAX_LINES lines:" >&2
+  printf '  - %s\n' "${OVERSIZED[@]}" >&2
+  exit 1
+fi
+echo "All files within $MAX_LINES line limit"
+
 run_step "Build" npm run build
 
 echo
