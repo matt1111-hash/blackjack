@@ -5,10 +5,21 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_PATH="$ROOT_DIR/.quality_gate.conf"
 MODE="local"
-
-if [[ "${1:-}" == "--ci" ]]; then
-  MODE="ci"
-fi
+case "${1:-}" in
+  --help|-h)
+    echo "Usage: ./quality_gate.sh [--ci]"
+    exit 0
+    ;;
+  --ci)
+    MODE="ci"
+    ;;
+  "")
+    ;;
+  *)
+    echo "Unknown argument: $1" >&2
+    exit 1
+    ;;
+esac
 
 if [[ ! -f "$CONFIG_PATH" ]]; then
   echo "Missing config: $CONFIG_PATH" >&2
