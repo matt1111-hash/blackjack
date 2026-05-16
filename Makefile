@@ -8,13 +8,11 @@ help:
 	@echo "make check | quality | ci | strict | test | coverage"
 
 check:
-	@./quality_gate.sh --quick
+	@./quality_gate.sh
 quality:
-	@./quality_gate.sh --full
+	@./quality_gate.sh
 ci:
 	@./quality_gate.sh --ci
-strict:
-	@./quality_gate.sh --strict
 test:
 	@npm run test:run || npm run test
 coverage:
