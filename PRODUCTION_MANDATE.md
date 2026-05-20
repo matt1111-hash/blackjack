@@ -22,10 +22,10 @@ Release decision — nem abszolút állapot. Négy dimenzió egyszerre kell:
 
 ---
 
-## 26 kötelező kritérium
+## 31 kötelező kritérium
 
 > **Solo desktop projekt esetén** (egy felhasználó, nincs szerver, git = backup):
-> kötelező: **1–7, 13, 17, 20, 22, 26** — a többi N/A, de az agent tudja, miért.
+> kötelező: **1–7, 13, 17, 20, 22, 26–31** — a többi N/A, de az agent tudja, miért.
 
 ### FUNKCIÓ ÉS MEGBÍZHATÓSÁG
 1. ✅ Fő user flow-k végig működnek, edge case-ek kezelve, hibaüzenetek értelmezhetők
@@ -63,6 +63,13 @@ Release decision — nem abszolút állapot. Négy dimenzió egyszerre kell:
 23. ⚪ API contract — N/A
 24. ⚪ ADR-ek — N/A
 25. ⚪ Operációs runbook — N/A
+
+### FRONTEND-SPECIFIKUS (solo desktop kliensalkalmazás)
+27. ✅ React Error Boundary: top-level hiba-izoláció a teljes React fa összeomlásának megelőzésére
+28. ✅ LocalStorage / state persistence: sémaváltozások és sérült adatok biztonságos lekezelése (graceful fallback default értékekre crash helyett)
+29. ✅ Cross-browser és mobil validáció: legalább WebKit/iOS Safari és mobil viewportok alapvető működésének ellenőrzése
+30. ✅ Asset betöltési hibák: hangfájl és SVG betöltési hiba / timeout lekezelése (halkított mód hangfájl hiányakor, placeholder kártyakép SVG hiányakor)
+31. ✅ Licenc és attribúció: felhasznált assetek licencének ellenőrzése és attribúciók feltüntetése a README-ben
 
 ### CLEAN ARCHITECTURE
 26. ✅ Dependency rule nem sérül: domain framework-agnosztikus, use case-ek csak portokat látnak, ORM model ≠ domain entity, HTTP típusok nem szivárognak use case-be
