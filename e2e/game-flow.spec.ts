@@ -88,7 +88,10 @@ test('double down doubles the bet and resolves to win', async ({ page }) => {
     { suit: 'spades', rank: 'K', faceUp: true },
   ]);
 
-  await forceClick(page.getByTestId('action-double'));
+  const doubleBtn = page.getByTestId('action-double');
+  await doubleBtn.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300);
+  await forceClick(doubleBtn);
 
   await expect(page.getByTestId('game-result-badge-0')).toHaveText('WIN', { timeout: 15000 });
 });
