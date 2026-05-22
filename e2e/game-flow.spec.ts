@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 type TestCard = {
   suit: 'hearts' | 'diamonds' | 'clubs' | 'spades';
@@ -7,6 +7,11 @@ type TestCard = {
 };
 
 const E2E_SHOE_STORAGE_KEY = 'blackjack:e2e-shoe';
+
+/** Click with force to bypass framer-motion animation stability issues on mobile. */
+async function forceClick(locator: Locator): Promise<void> {
+  await locator.click({ force: true });
+}
 
 /** Set predetermined shoe, navigate, place bet, and deal. */
 async function launchScenario(page: Page, shoe: TestCard[]): Promise<void> {
@@ -20,7 +25,7 @@ async function launchScenario(page: Page, shoe: TestCard[]): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Existing scenarios (kept for regression)
+// Regression scenarios
 // ---------------------------------------------------------------------------
 
 test('stand resolves to a win when the dealer busts', async ({ page }) => {
@@ -32,7 +37,7 @@ test('stand resolves to a win when the dealer busts', async ({ page }) => {
     { suit: 'hearts', rank: 'K', faceUp: true },
   ]);
 
-  await page.getByTestId('action-stand').click();
+  await forceClick(page.getByTestId('action-stand'));
 
   await expect(page.getByTestId('game-result-badge-0')).toHaveText('WIN');
   await expect(page.getByTestId('dealer-value')).toHaveText('26');
@@ -47,14 +52,14 @@ test('hit resolves to a loss when the player busts', async ({ page }) => {
     { suit: 'clubs', rank: '10', faceUp: true },
   ]);
 
-  await page.getByTestId('action-hit').click();
+  await forceClick(page.getByTestId('action-hit'));
 
   await expect(page.getByTestId('player-hand-value-0')).toHaveText('BUST');
   await expect(page.getByTestId('game-result-badge-0')).toHaveText('LOSE');
 });
 
 // ---------------------------------------------------------------------------
-// New critical-flow scenarios
+// Critical-flow scenarios
 // ---------------------------------------------------------------------------
 
 test('blackjack pays 3:2 on natural 21', async ({ page }) => {
@@ -71,7 +76,6 @@ test('blackjack pays 3:2 on natural 21', async ({ page }) => {
 });
 
 test('double down doubles the bet and resolves to win', async ({ page }) => {
-  test.slow();
   // Shoe: p1=8, d1=6, p2=2, d2=10(hole), extra=A(player), K(dealer bust)
   // Player: 8+2=10 → double → +A = 21
   // Dealer: 6+10=16 → hit K=26 bust
@@ -84,13 +88,12 @@ test('double down doubles the bet and resolves to win', async ({ page }) => {
     { suit: 'spades', rank: 'K', faceUp: true },
   ]);
 
-  await page.getByTestId('action-double').click();
+  await forceClick(page.getByTestId('action-double'));
 
   await expect(page.getByTestId('game-result-badge-0')).toHaveText('WIN', { timeout: 15000 });
 });
 
 test('split creates two hands and both win when dealer busts', async ({ page }) => {
-  test.slow();
   // Shoe: p1=K, d1=6, p2=K(same rank), d2=10(hole)
   // Split: hand1=[K,9]=19, hand2=[K,Q]=20
   // Dealer: 6+10=16 → hit 7=23 bust
@@ -104,13 +107,11 @@ test('split creates two hands and both win when dealer busts', async ({ page }) 
     { suit: 'spades', rank: '7', faceUp: true },
   ]);
 
-  await page.getByTestId('action-split').click();
-  // Wait for split animation to settle, then stand on hand 1
-  await page.waitForTimeout(500);
-  await page.getByTestId('action-stand').click();
-  // Wait for hand transition animation, then stand on hand 2
-  await page.waitForTimeout(500);
-  await page.getByTestId('action-stand').click();
+  await forceClick(page.getByTestId('action-split'));
+  await page.waitForTimeout(300);
+  await forceClick(page.getByTestId('action-stand'));
+  await page.waitForTimeout(300);
+  await forceClick(page.getByTestId('action-stand'));
 
   await expect(page.getByTestId('game-result-badge-0')).toHaveText('WIN', { timeout: 15000 });
   await expect(page.getByTestId('game-result-badge-1')).toHaveText('WIN', { timeout: 15000 });
@@ -127,13 +128,12 @@ test('insurance buy protects against dealer blackjack', async ({ page }) => {
     { suit: 'diamonds', rank: 'K', faceUp: true },
   ]);
 
-  await page.getByTestId('insurance-buy').click();
+  await forceClick(page.getByTestId('insurance-buy'));
 
   await expect(page.getByTestId('game-result-badge-0')).toHaveText('LOSE');
 });
 
 test('insurance decline allows continued play', async ({ page }) => {
-  test.slow();
   // Shoe: p1=K, d1=A(dealer shows Ace), p2=Q, d2=8(hole, no BJ)
   // Decline → phase=playing → stand → dealer: A+8=19, player 20 wins
   await launchScenario(page, [
@@ -144,15 +144,14 @@ test('insurance decline allows continued play', async ({ page }) => {
     { suit: 'spades', rank: '7', faceUp: true },
   ]);
 
-  await page.getByTestId('insurance-decline').click();
+  await forceClick(page.getByTestId('insurance-decline'));
   await page.waitForTimeout(300);
-  await page.getByTestId('action-stand').click();
+  await forceClick(page.getByTestId('action-stand'));
 
   await expect(page.getByTestId('game-result-badge-0')).toHaveText('WIN', { timeout: 15000 });
 });
 
 test('full round cycle: deal → finish → new round → deal again', async ({ page }) => {
-  test.slow();
   const shoe = [
     { suit: 'spades', rank: 'K', faceUp: true },
     { suit: 'hearts', rank: '6', faceUp: true },
@@ -170,16 +169,16 @@ test('full round cycle: deal → finish → new round → deal again', async ({ 
   // Round 1: bet → deal → stand → win
   await page.getByTestId('bet-chip-100').click();
   await page.getByTestId('deal-button').click();
-  await page.getByTestId('action-stand').click();
+  await forceClick(page.getByTestId('action-stand'));
   await expect(page.getByTestId('game-result-badge-0')).toHaveText('WIN', { timeout: 15000 });
 
   // New round — back to betting state
-  await page.getByTestId('new-round-button').click();
+  await forceClick(page.getByTestId('new-round-button'));
   await expect(page.getByTestId('bet-chip-100')).toBeVisible();
 
   // Round 2: same shoe (reshuffled from localStorage), same outcome
   await page.getByTestId('bet-chip-100').click();
   await page.getByTestId('deal-button').click();
-  await page.getByTestId('action-stand').click();
+  await forceClick(page.getByTestId('action-stand'));
   await expect(page.getByTestId('game-result-badge-0')).toHaveText('WIN', { timeout: 15000 });
 });
