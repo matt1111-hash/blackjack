@@ -13,7 +13,6 @@ export type SoundType =
   | 'dealStart'
   | 'buttonClick';
 
-// Sound configuration
 const SOUND_CONFIG: Record<SoundType, string> = {
   cardPlace: '/sounds/card-place.ogg',
   cardSlide: '/sounds/card-slide.ogg',
@@ -26,6 +25,10 @@ const SOUND_CONFIG: Record<SoundType, string> = {
   dealStart: '/sounds/deal-start.ogg',
   buttonClick: '/sounds/button-click.ogg',
 };
+
+const MAX_RETRIES = 3;
+const LOAD_TIMEOUT_MS = 5000;
+const CIRCUIT_BREAKER_THRESHOLD = 5;
 
 interface SoundState {
   isLoading: boolean;
@@ -49,62 +52,104 @@ function createSoundManager(): SoundManager {
   const preloadedSet = new Set<SoundType>();
   let isMuted = false;
   let masterVolume = 0.7;
+  let consecutiveFailures = 0;
+  let circuitOpen = false;
 
-  const loadSound = (type: SoundType): Howl | null => {
-    if (sounds.has(type)) {
-      return sounds.get(type)!;
-    }
-
-    const src = SOUND_CONFIG[type];
-    const sound = new Howl({
-      src: [src],
+  const createHowl = (type: SoundType): Howl =>
+    new Howl({
+      src: [SOUND_CONFIG[type]],
       volume: masterVolume,
-      preload: true,
+      preload: false,
       html5: false,
       onloaderror: () => {
-        // Sound loading failed silently - game continues without sound
+        consecutiveFailures++;
+        if (consecutiveFailures >= CIRCUIT_BREAKER_THRESHOLD) {
+          circuitOpen = true;
+        }
       },
       onplayerror: () => {
-        sound.once('unlock', () => {
-          sound.play();
-        });
+        const s = sounds.get(type);
+        if (s) s.once('unlock', () => s.play());
       },
     });
 
+  /** Attempt to load a single sound with timeout. Returns true on success. */
+  const tryLoadOne = (type: SoundType): Promise<boolean> =>
+    new Promise((resolve) => {
+      if (circuitOpen) {
+        resolve(false);
+        return;
+      }
+
+      const existing = sounds.get(type);
+      if (existing) {
+        existing.unload();
+        sounds.delete(type);
+      }
+
+      const sound = createHowl(type);
+      sounds.set(type, sound);
+
+      let settled = false;
+      const timer = setTimeout(() => {
+        if (!settled) {
+          settled = true;
+          resolve(false);
+        }
+      }, LOAD_TIMEOUT_MS);
+
+      sound.once('load', () => {
+        if (!settled) {
+          settled = true;
+          clearTimeout(timer);
+          consecutiveFailures = 0;
+          preloadedSet.add(type);
+          resolve(true);
+        }
+      });
+
+      sound.once('loaderror', () => {
+        if (!settled) {
+          settled = true;
+          clearTimeout(timer);
+          resolve(false);
+        }
+      });
+
+      sound.load();
+    });
+
+  /** Retry wrapper: up to MAX_RETRIES attempts per sound. */
+  const loadWithRetry = async (type: SoundType): Promise<boolean> => {
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      if (circuitOpen) return false;
+      if (await tryLoadOne(type)) return true;
+    }
+    return false;
+  };
+
+  /** Lazy-load for play(): fast path, no retry — game continues silently on failure. */
+  const loadSound = (type: SoundType): Howl | null => {
+    if (circuitOpen) return null;
+    if (sounds.has(type)) return sounds.get(type)!;
+    const sound = createHowl(type);
     sounds.set(type, sound);
+    sound.load();
     return sound;
   };
 
   return {
     play: (type: SoundType) => {
       if (isMuted) return;
-
       const sound = loadSound(type);
       if (sound) {
         sound.volume(masterVolume);
-        if (!sound.playing()) {
-          sound.play();
-        }
+        if (!sound.playing()) sound.play();
       }
     },
     preload: async (types?: SoundType[]) => {
       const toLoad = types || (Object.keys(SOUND_CONFIG) as SoundType[]);
-      const promises = toLoad.map(async (type) => {
-        const sound = loadSound(type);
-        if (sound) {
-          try {
-            await new Promise<void>((resolve, reject) => {
-              sound.once('load', resolve);
-              sound.once('error', reject);
-              sound.load();
-            });
-            preloadedSet.add(type);
-          } catch {
-            // Sound file not found, that's OK
-          }
-        }
-      });
-      await Promise.all(promises);
+      await Promise.all(toLoad.map(loadWithRetry));
     },
     mute: () => {
       isMuted = true;
@@ -222,56 +267,5 @@ export function useSound() {
     unmute,
     toggleMute,
     setVolume,
-  };
-}
-
-// Volume control hook
-export function useVolume() {
-  const [volume, setVolumeState] = useState(0.7);
-
-  const setMasterVolume = useCallback((v: number) => {
-    const clamped = Math.max(0, Math.min(1, v));
-    setVolumeState(clamped);
-    Howler.volume(clamped);
-  }, []);
-
-  const increaseVolume = useCallback(() => {
-    setMasterVolume(volume + 0.1);
-  }, [volume, setMasterVolume]);
-
-  const decreaseVolume = useCallback(() => {
-    setMasterVolume(volume - 0.1);
-  }, [volume, setMasterVolume]);
-
-  return {
-    volume,
-    setVolume: setMasterVolume,
-    increaseVolume,
-    decreaseVolume,
-  };
-}
-
-// Sound context for the game
-export function useGameSounds() {
-  const { play, isMuted, toggleMute } = useSound();
-
-  // Play sounds for game events
-  const sounds = {
-    playCardPlace: () => play('cardPlace'),
-    playCardSlide: () => play('cardSlide'),
-    playChipDrop: () => play('chipDrop'),
-    playChipStack: () => play('chipStack'),
-    playChipWin: () => play('chipWin'),
-    playWin: () => play('win'),
-    playLose: () => play('lose'),
-    playBlackjack: () => play('blackjack'),
-    playDealStart: () => play('dealStart'),
-    playButtonClick: () => play('buttonClick'),
-  };
-
-  return {
-    ...sounds,
-    isMuted,
-    toggleMute,
   };
 }

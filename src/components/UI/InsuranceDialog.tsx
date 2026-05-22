@@ -31,6 +31,7 @@ export function InsuranceDialog({ onBuy, onDecline, insuranceCost }: InsuranceDi
       </p>
       <div className="insurance-dialog__actions">
         <motion.button
+          data-testid="insurance-buy"
           onClick={onBuy}
           className="insurance-dialog__btn-buy"
           whileHover={{ scale: 1.05 }}
@@ -39,6 +40,7 @@ export function InsuranceDialog({ onBuy, onDecline, insuranceCost }: InsuranceDi
           BUY (${insuranceCost})
         </motion.button>
         <motion.button
+          data-testid="insurance-decline"
           onClick={onDecline}
           className="insurance-dialog__btn-decline"
           whileHover={{ scale: 1.05 }}

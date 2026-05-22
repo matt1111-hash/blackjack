@@ -18,6 +18,9 @@ vi.mock('../../hooks/useSound', () => ({
     toggleMute: vi.fn(),
     unmute: vi.fn(),
   }),
+}));
+
+vi.mock('../../hooks/soundHelpers', () => ({
   useVolume: () => ({
     decreaseVolume: vi.fn(),
     increaseVolume: vi.fn(),
