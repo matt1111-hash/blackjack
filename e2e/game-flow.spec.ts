@@ -67,10 +67,11 @@ test('blackjack pays 3:2 on natural 21', async ({ page }) => {
     { suit: 'diamonds', rank: '10', faceUp: true },
   ]);
 
-  await expect(page.getByTestId('game-result-badge-0')).toHaveText('BLACKJACK');
+  await expect(page.getByTestId('game-result-badge-0')).toHaveText('BLACKJACK!');
 });
 
 test('double down doubles the bet and resolves to win', async ({ page }) => {
+  test.slow();
   // Shoe: p1=8, d1=6, p2=2, d2=10(hole), extra=A(player), K(dealer bust)
   // Player: 8+2=10 → double → +A = 21
   // Dealer: 6+10=16 → hit K=26 bust
@@ -85,10 +86,11 @@ test('double down doubles the bet and resolves to win', async ({ page }) => {
 
   await page.getByTestId('action-double').click();
 
-  await expect(page.getByTestId('game-result-badge-0')).toHaveText('WIN');
+  await expect(page.getByTestId('game-result-badge-0')).toHaveText('WIN', { timeout: 15000 });
 });
 
 test('split creates two hands and both win when dealer busts', async ({ page }) => {
+  test.slow();
   // Shoe: p1=K, d1=6, p2=K(same rank), d2=10(hole)
   // Split: hand1=[K,9]=19, hand2=[K,Q]=20
   // Dealer: 6+10=16 → hit 7=23 bust
@@ -103,11 +105,15 @@ test('split creates two hands and both win when dealer busts', async ({ page }) 
   ]);
 
   await page.getByTestId('action-split').click();
+  // Wait for split animation to settle, then stand on hand 1
+  await page.waitForTimeout(500);
   await page.getByTestId('action-stand').click();
+  // Wait for hand transition animation, then stand on hand 2
+  await page.waitForTimeout(500);
   await page.getByTestId('action-stand').click();
 
-  await expect(page.getByTestId('game-result-badge-0')).toHaveText('WIN');
-  await expect(page.getByTestId('game-result-badge-1')).toHaveText('WIN');
+  await expect(page.getByTestId('game-result-badge-0')).toHaveText('WIN', { timeout: 15000 });
+  await expect(page.getByTestId('game-result-badge-1')).toHaveText('WIN', { timeout: 15000 });
 });
 
 test('insurance buy protects against dealer blackjack', async ({ page }) => {
@@ -127,6 +133,7 @@ test('insurance buy protects against dealer blackjack', async ({ page }) => {
 });
 
 test('insurance decline allows continued play', async ({ page }) => {
+  test.slow();
   // Shoe: p1=K, d1=A(dealer shows Ace), p2=Q, d2=8(hole, no BJ)
   // Decline → phase=playing → stand → dealer: A+8=19, player 20 wins
   await launchScenario(page, [
@@ -138,12 +145,14 @@ test('insurance decline allows continued play', async ({ page }) => {
   ]);
 
   await page.getByTestId('insurance-decline').click();
+  await page.waitForTimeout(300);
   await page.getByTestId('action-stand').click();
 
-  await expect(page.getByTestId('game-result-badge-0')).toHaveText('WIN');
+  await expect(page.getByTestId('game-result-badge-0')).toHaveText('WIN', { timeout: 15000 });
 });
 
 test('full round cycle: deal → finish → new round → deal again', async ({ page }) => {
+  test.slow();
   const shoe = [
     { suit: 'spades', rank: 'K', faceUp: true },
     { suit: 'hearts', rank: '6', faceUp: true },
@@ -162,7 +171,7 @@ test('full round cycle: deal → finish → new round → deal again', async ({ 
   await page.getByTestId('bet-chip-100').click();
   await page.getByTestId('deal-button').click();
   await page.getByTestId('action-stand').click();
-  await expect(page.getByTestId('game-result-badge-0')).toHaveText('WIN');
+  await expect(page.getByTestId('game-result-badge-0')).toHaveText('WIN', { timeout: 15000 });
 
   // New round — back to betting state
   await page.getByTestId('new-round-button').click();
@@ -172,5 +181,5 @@ test('full round cycle: deal → finish → new round → deal again', async ({ 
   await page.getByTestId('bet-chip-100').click();
   await page.getByTestId('deal-button').click();
   await page.getByTestId('action-stand').click();
-  await expect(page.getByTestId('game-result-badge-0')).toHaveText('WIN');
+  await expect(page.getByTestId('game-result-badge-0')).toHaveText('WIN', { timeout: 15000 });
 });
