@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { useSound, useVolume } from '../../hooks/useSound';
+import { useSound } from '../../hooks/useSound';
+import { useVolume } from '../../hooks/soundHelpers';
 import './SoundSettings.css';
 
 export function SoundSettings() {

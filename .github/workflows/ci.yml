@@ -5,10 +5,12 @@ on:
     branches:
       - main
       - refactor
+      - 'production-ready/**'
   pull_request:
     branches:
       - main
       - refactor
+      - 'production-ready/**'
 
 jobs:
   test:
@@ -21,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -40,7 +42,7 @@ jobs:
         run: npm run build
 
       - name: Install Playwright
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium webkit
 
       - name: E2E
         run: npx playwright test

@@ -5,10 +5,21 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_PATH="$ROOT_DIR/.quality_gate.conf"
 MODE="local"
-
-if [[ "${1:-}" == "--ci" ]]; then
-  MODE="ci"
-fi
+case "${1:-}" in
+  --help|-h)
+    echo "Usage: ./quality_gate.sh [--ci]"
+    exit 0
+    ;;
+  --ci)
+    MODE="ci"
+    ;;
+  "")
+    ;;
+  *)
+    echo "Unknown argument: $1" >&2
+    exit 1
+    ;;
+esac
 
 if [[ ! -f "$CONFIG_PATH" ]]; then
   echo "Missing config: $CONFIG_PATH" >&2
@@ -83,6 +94,34 @@ if (failures.length > 0) {
   process.exit(1);
 }
 ' "$LINES_PCT" "$MIN_LINES" "$FUNCTIONS_PCT" "$MIN_FUNCTIONS"
+
+MAX_LINES="${MAX_FILE_LINES:-300}"
+if [[ "$MODE" == "ci" && -n "${CI_MAX_FILE_LINES:-}" ]]; then
+  MAX_LINES="$CI_MAX_FILE_LINES"
+fi
+
+SIZE_PATHS_TO_CHECK=()
+for p in "${CHT_SIZE_PATHS[@]:-${SIZE_PATHS:-src}}"; do
+  SIZE_PATHS_TO_CHECK+=("$ROOT_DIR/$p")
+done
+
+echo
+echo "File size check ($MODE mode, max: $MAX_LINES lines)"
+
+OVERSIZED=()
+while IFS= read -r -d '' file; do
+  lines=$(wc -l < "$file")
+  if (( lines > MAX_LINES )); then
+    OVERSIZED+=("$file ($lines)")
+  fi
+done < <(find "${SIZE_PATHS_TO_CHECK[@]}" -type f \( -name "*.ts" -o -name "*.tsx" \) -print0)
+
+if (( ${#OVERSIZED[@]} > 0 )); then
+  echo "File size check failed: ${#OVERSIZED[@]} file(s) exceed $MAX_LINES lines:" >&2
+  printf '  - %s\n' "${OVERSIZED[@]}" >&2
+  exit 1
+fi
+echo "All files within $MAX_LINES line limit"
 
 run_step "Build" npm run build
 

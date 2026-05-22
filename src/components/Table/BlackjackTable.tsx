@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useGameStore } from '../../store/gameStore';
-import { useGameSounds } from '../../hooks/useSound';
+import { useGameSounds } from '../../hooks/soundHelpers';
 import { DealerArea } from './DealerArea';
 import { PlayerArea } from './PlayerArea';
 import { Balance } from '../UI/Balance';

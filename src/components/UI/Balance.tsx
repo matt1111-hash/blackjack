@@ -20,7 +20,7 @@ export function Balance({ balance, className = '' }: BalanceProps) {
       <span className="balance__label">Balance</span>
       <span className="balance__amount">${balance.toLocaleString()}</span>
       {isLowBalance && (
-        <button className="balance__reset" onClick={resetBalance} title="Reset balance to $5,000">
+        <button data-testid="balance-reset" className="balance__reset" onClick={resetBalance} title="Reset balance to $5,000">
           🔄
         </button>
       )}
