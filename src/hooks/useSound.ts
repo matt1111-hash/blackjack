@@ -183,7 +183,7 @@ function createSoundManager(): SoundManager {
 // Singleton sound manager
 let soundManager: SoundManager | null = null;
 
-function getSoundManager(): SoundManager {
+export function getSoundManager(): SoundManager {
   if (!soundManager) {
     soundManager = createSoundManager();
     if (typeof window !== 'undefined') {

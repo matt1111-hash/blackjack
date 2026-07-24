@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useGameStore } from '../../store/gameStore';
 import { useGameSounds } from '../../hooks/soundHelpers';
+import { canPlayerDouble, canPlayerSplit } from '../../logic/rules';
 import { DealerArea } from './DealerArea';
 import { PlayerArea } from './PlayerArea';
 import { Balance } from '../UI/Balance';
@@ -9,6 +11,8 @@ import { SoundSettings } from '../UI/SoundSettings';
 import { InsuranceDialog } from '../UI/InsuranceDialog';
 import type { ChipValue } from '../../types';
 import './BlackjackTable.css';
+
+const RESULT_SOUND_DELAY_MS = 500;
 
 export function BlackjackTable() {
   const {
@@ -30,7 +34,30 @@ export function BlackjackTable() {
     declineInsurance,
     newRound,
     clearError,
-  } = useGameStore();
+  } = useGameStore(
+    // Narrow selector: re-render only when one of these fields changes.
+    // Actions are stable references, so they never trigger a re-render.
+    useShallow((state) => ({
+      balance: state.balance,
+      currentBet: state.currentBet,
+      dealerHand: state.dealerHand,
+      playerHands: state.playerHands,
+      activeHandIndex: state.activeHandIndex,
+      phase: state.phase,
+      roundResults: state.roundResults,
+      error: state.error,
+      placeBet: state.placeBet,
+      deal: state.deal,
+      hit: state.hit,
+      stand: state.stand,
+      double: state.double,
+      split: state.split,
+      buyInsurance: state.buyInsurance,
+      declineInsurance: state.declineInsurance,
+      newRound: state.newRound,
+      clearError: state.clearError,
+    }))
+  );
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -63,26 +90,33 @@ export function BlackjackTable() {
 
   // Play result sounds when round finishes
   useEffect(() => {
-    if (phase === 'finished' && roundResults) {
-      let hasWin = false;
-      let hasLose = true;
-      let hasBlackjack = false;
+    if (phase !== 'finished' || !roundResults) return;
 
-      for (let i = 0; i < roundResults.length; i++) {
-        const result = roundResults[i].result;
-        if (result === 'win' || result === 'blackjack') hasWin = true;
-        if (result !== 'lose') hasLose = false;
-        if (result === 'blackjack') hasBlackjack = true;
-      }
+    let hasWin = false;
+    let hasLose = true;
+    let hasBlackjack = false;
 
-      if (hasBlackjack) {
-        setTimeout(playBlackjack, 500);
-      } else if (hasWin && !hasLose) {
-        setTimeout(playWin, 500);
-      } else if (hasLose) {
-        setTimeout(playLose, 500);
-      }
+    for (let i = 0; i < roundResults.length; i++) {
+      const result = roundResults[i].result;
+      if (result === 'win' || result === 'blackjack') hasWin = true;
+      if (result !== 'lose') hasLose = false;
+      if (result === 'blackjack') hasBlackjack = true;
     }
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    if (hasBlackjack) {
+      timer = setTimeout(playBlackjack, RESULT_SOUND_DELAY_MS);
+    } else if (hasWin && !hasLose) {
+      timer = setTimeout(playWin, RESULT_SOUND_DELAY_MS);
+    } else if (hasLose) {
+      timer = setTimeout(playLose, RESULT_SOUND_DELAY_MS);
+    }
+
+    // Clear the pending sound if the phase/results change before it fires
+    // (also neutralises StrictMode's double-invoke in dev).
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [phase, roundResults, playWin, playLose, playBlackjack]);
 
   const handlePlaceBet = (amount: ChipValue) => {
@@ -172,8 +206,12 @@ export function BlackjackTable() {
             onSplit={handleSplit}
             onPlaceBet={phase === 'betting' ? handlePlaceBet : undefined}
             gamePhase={phase}
-            canDouble={balance >= (playerHands[activeHandIndex]?.bet || 0)}
-            canSplit={playerHands.length === 1 && playerHands[0]?.cards.length === 2}
+            canDouble={
+              playerHands[activeHandIndex]
+                ? canPlayerDouble(playerHands[activeHandIndex], balance)
+                : false
+            }
+            canSplit={playerHands.length === 1 && canPlayerSplit(playerHands[0], balance)}
             roundResults={roundResults}
           />
         </div>

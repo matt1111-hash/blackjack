@@ -1,31 +1,7 @@
 import { motion, type Variants } from 'framer-motion';
 import type { ChipValue } from '../../types';
-import { CHIP_COLORS } from '../../types';
 import { Chip } from './Chip';
 import './ChipAnimations.css';
-
-// Chip placement animation variants - 3D enhanced
-const chipPlaceVariants: Variants = {
-  initial: {
-    y: -200,
-    z: 150,
-    scale: 0.5,
-    opacity: 0,
-    rotate: -30,
-  },
-  placed: {
-    y: 0,
-    z: 0,
-    scale: 1,
-    opacity: 1,
-    rotate: 0,
-    transition: {
-      type: 'spring' as const,
-      stiffness: 400,
-      damping: 20,
-    },
-  },
-};
 
 // Chip stack animation - 3D enhanced
 const chipStackVariants: Variants = {
@@ -82,32 +58,6 @@ const loseChipVariants: Variants = {
     },
   },
 };
-
-interface ChipButtonProps {
-  value: ChipValue;
-  onClick?: () => void;
-  disabled?: boolean;
-}
-
-export function ChipButton({ value, onClick, disabled }: ChipButtonProps) {
-  const color = CHIP_COLORS[value];
-
-  return (
-    <motion.button
-      className="chip-button"
-      onClick={onClick}
-      disabled={disabled}
-      whileHover={!disabled ? { scale: 1.15, y: -5, z: 10 } : undefined}
-      whileTap={!disabled ? { scale: 0.9 } : undefined}
-      initial="initial"
-      animate="placed"
-      variants={chipPlaceVariants}
-      style={{ '--chip-color': color, transformStyle: 'preserve-3d' } as React.CSSProperties}
-    >
-      <Chip value={value} />
-    </motion.button>
-  );
-}
 
 interface AnimatedChipStackProps {
   chips: Array<{ value: ChipValue; id: string }>;

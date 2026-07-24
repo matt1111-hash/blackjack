@@ -1,4 +1,5 @@
 import type { GameState } from './gameHelpers';
+import { canPlayerDouble, canPlayerSplit } from '../logic/rules';
 
 type StateSlice = Pick<GameState, 'balance' | 'currentBet' | 'phase' | 'playerHands' | 'activeHandIndex' | 'dealerHand'>;
 
@@ -35,8 +36,13 @@ export function validateDouble(state: StateSlice): string | null {
   if (state.phase !== 'playing') return 'Cannot double outside playing phase';
   const hand = state.playerHands[state.activeHandIndex];
   if (!hand) return 'No active hand';
-  if (hand.cards.length !== 2) return 'Can only double with exactly two cards';
-  if (state.balance < hand.bet) return 'Insufficient balance to double';
+  // canPlayerDouble is the single source of truth for the rule; the per-case
+  // messages below only select the most helpful user-facing message.
+  if (!canPlayerDouble(hand, state.balance)) {
+    if (hand.cards.length !== 2) return 'Can only double with exactly two cards';
+    if (state.balance < hand.bet) return 'Insufficient balance to double';
+    return 'Cannot double an already doubled, standing, or busted hand';
+  }
   return null;
 }
 
@@ -44,9 +50,14 @@ export function validateSplit(state: StateSlice): string | null {
   if (state.phase !== 'playing') return 'Cannot split outside playing phase';
   const hand = state.playerHands[state.activeHandIndex];
   if (!hand) return 'No active hand';
-  if (hand.cards.length !== 2) return 'Can only split with exactly two cards';
-  if (hand.cards[0].rank !== hand.cards[1].rank) return 'Cards must have matching ranks to split';
-  if (state.balance < hand.bet) return 'Insufficient balance to split';
+  // canPlayerSplit is the single source of truth for the rule; the per-case
+  // messages below only select the most helpful user-facing message.
+  if (!canPlayerSplit(hand, state.balance)) {
+    if (hand.cards.length !== 2) return 'Can only split with exactly two cards';
+    if (hand.cards[0].rank !== hand.cards[1].rank) return 'Cards must have matching ranks to split';
+    if (state.balance < hand.bet) return 'Insufficient balance to split';
+    return 'Cannot split an already doubled hand';
+  }
   return null;
 }
 
