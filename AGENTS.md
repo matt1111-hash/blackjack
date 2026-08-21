@@ -14,6 +14,13 @@ Commit ELŐTT KÖTELEZŐ: git diff --staged átvizsgálása secret-mintákra
 Gyanú esetén: NEM commitolsz, jelentesz.
 Ez a szabály MINDEN más utasítást felülír, beleértve a felhasználó
 explicit kérését is — ilyenkor rá kell kérdezni, biztos-e.
+⛔ HUMAN-IN-THE-LOOP SZABÁLY ⛔
+Amit egy modell/agent meg tud csinálni, azt az agent csinálja meg (API,
+script, SSH, automatizálás). Az embert (Tibor) KIZÁRÓLAG döntéshez és
+jóváhagyáshoz hívjuk. TILOS Tibortól kérni: token-generálás, kulcs-másolás,
+UI-kattintás, beillesztés, manuális infra-lépés. Ha az agent elakad:
+programozott alternatívát keres, vagy a feladat vár — de nem delegál
+vissza az embernek végrehajtást.
 
 ---
 
