@@ -1,5 +1,6 @@
 import type { Card, Hand } from '../types';
 import { calculateHandValue, isBusted, isBlackjack, calculateHandDetails } from './hand';
+import { dealCard } from './deck';
 
 export const DEALER_STAND_VALUE = 17;
 
@@ -20,7 +21,7 @@ export function dealerPlay(dealerHand: Hand, shoe: Card[]): { hand: Hand; remain
   let details = calculateHandDetails(hand.cards);
 
   while (shouldDealerHit(details.value, details.isSoft)) {
-    const dealResult = dealOneCard(remainingShoe);
+    const dealResult = dealCard(remainingShoe, true);
     if (!dealResult) break;
 
     const [newCard, remaining] = dealResult;
@@ -42,12 +43,6 @@ function shouldDealerHit(value: number, soft: boolean): boolean {
   }
   // Hard hand: hit if less than 17
   return value < DEALER_STAND_VALUE;
-}
-
-function dealOneCard(shoe: Card[]): [Card, Card[]] | undefined {
-  if (shoe.length === 0) return undefined;
-  const [card, ...remaining] = shoe;
-  return [{ ...card, faceUp: true }, remaining];
 }
 
 /** Calculate round results for all player hands vs dealer */

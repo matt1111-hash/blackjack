@@ -104,6 +104,21 @@ describe('validateDouble', () => {
     const hand = { ...createHand(100), cards: createShoe(1).slice(0, 3) };
     expect(validateDouble(makeState({ phase: 'playing', playerHands: [hand], balance: 500 }))).toContain('two cards');
   });
+
+  it('rejects an already doubled hand', () => {
+    const hand = { ...createHand(100), cards: createShoe(1).slice(0, 2), isDoubled: true };
+    expect(validateDouble(makeState({ phase: 'playing', playerHands: [hand], balance: 500 }))).not.toBeNull();
+  });
+
+  it('rejects a standing hand', () => {
+    const hand = { ...createHand(100), cards: createShoe(1).slice(0, 2), isStanding: true };
+    expect(validateDouble(makeState({ phase: 'playing', playerHands: [hand], balance: 500 }))).not.toBeNull();
+  });
+
+  it('rejects a busted hand', () => {
+    const hand = { ...createHand(100), cards: createShoe(1).slice(0, 2), isBusted: true };
+    expect(validateDouble(makeState({ phase: 'playing', playerHands: [hand], balance: 500 }))).not.toBeNull();
+  });
 });
 
 describe('validateSplit', () => {
@@ -123,6 +138,12 @@ describe('validateSplit', () => {
     const shoe = createShoe(1);
     const hand = { ...createHand(100), cards: [shoe[0], { ...shoe[0] }] };
     expect(validateSplit(makeState({ phase: 'playing', playerHands: [hand], balance: 50 }))).toContain('Insufficient');
+  });
+
+  it('rejects an already doubled hand', () => {
+    const shoe = createShoe(1);
+    const hand = { ...createHand(100), cards: [shoe[0], { ...shoe[0] }], isDoubled: true };
+    expect(validateSplit(makeState({ phase: 'playing', playerHands: [hand], balance: 500 }))).not.toBeNull();
   });
 });
 

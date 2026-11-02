@@ -13,17 +13,22 @@ export type SoundType =
   | 'dealStart'
   | 'buttonClick';
 
-const SOUND_CONFIG: Record<SoundType, string> = {
-  cardPlace: '/sounds/card-place.ogg',
-  cardSlide: '/sounds/card-slide.ogg',
-  chipDrop: '/sounds/chip-drop.ogg',
-  chipStack: '/sounds/chip-stack.ogg',
-  chipWin: '/sounds/chip-win.ogg',
-  win: '/sounds/win.ogg',
-  lose: '/sounds/lose.ogg',
-  blackjack: '/sounds/blackjack.ogg',
-  dealStart: '/sounds/deal-start.ogg',
-  buttonClick: '/sounds/button-click.ogg',
+// Minden hanghoz két formátum: ogg (jobb tömörítés, kisebb fájl) + mp3 fallback.
+// Howler az ELSŐ támogatott kódeket választja a listából. WebKit/Safari/iOS nem
+// támogatja az Ogg Vorbist — ha csak ogg lenne megadva, ott minden hang csendesen
+// elbukna (loaderror -> circuit breaker, vagy egyszerűen nem játszható src) és a
+// játék néma maradna. Az mp3 univerzálisan támogatott, így Safari is kap hangot.
+const SOUND_CONFIG: Record<SoundType, string[]> = {
+  cardPlace: ['/sounds/card-place.ogg', '/sounds/card-place.mp3'],
+  cardSlide: ['/sounds/card-slide.ogg', '/sounds/card-slide.mp3'],
+  chipDrop: ['/sounds/chip-drop.ogg', '/sounds/chip-drop.mp3'],
+  chipStack: ['/sounds/chip-stack.ogg', '/sounds/chip-stack.mp3'],
+  chipWin: ['/sounds/chip-win.ogg', '/sounds/chip-win.mp3'],
+  win: ['/sounds/win.ogg', '/sounds/win.mp3'],
+  lose: ['/sounds/lose.ogg', '/sounds/lose.mp3'],
+  blackjack: ['/sounds/blackjack.ogg', '/sounds/blackjack.mp3'],
+  dealStart: ['/sounds/deal-start.ogg', '/sounds/deal-start.mp3'],
+  buttonClick: ['/sounds/button-click.ogg', '/sounds/button-click.mp3'],
 };
 
 const MAX_RETRIES = 3;
@@ -54,10 +59,13 @@ function createSoundManager(): SoundManager {
   let masterVolume = 0.7;
   let consecutiveFailures = 0;
   let circuitOpen = false;
+  // Deduplikálja a teljes (types=undefined) preloadot: a useSound hook többször
+  // is meghívhatja. Ha már fut, újra nem indítjuk (Howl-példányok versenye elkerül).
+  let preloadingPromise: Promise<void> | null = null;
 
   const createHowl = (type: SoundType): Howl =>
     new Howl({
-      src: [SOUND_CONFIG[type]],
+      src: SOUND_CONFIG[type],
       volume: masterVolume,
       preload: false,
       html5: false,
@@ -81,7 +89,17 @@ function createSoundManager(): SoundManager {
         return;
       }
 
+      // Idempotens: ha már létezik ÉS betöltött Howl, hagyjuk békén.
+      // A korábbi `existing.unload()` megölte a play() által épp használt hangot,
+      // amikor a preload (mely a useSound hook miatt többször is lefuthat) és a
+      // play() versenyeztek — ez termelt "hol van hang, hol nincs" fluktuációt.
       const existing = sounds.get(type);
+      if (existing && existing.state() === 'loaded') {
+        preloadedSet.add(type);
+        resolve(true);
+        return;
+      }
+      // Ha van, de még nem töltött (beragadt/loading): dobjuk és újratöltjük.
       if (existing) {
         existing.unload();
         sounds.delete(type);
@@ -148,8 +166,21 @@ function createSoundManager(): SoundManager {
       }
     },
     preload: async (types?: SoundType[]) => {
-      const toLoad = types || (Object.keys(SOUND_CONFIG) as SoundType[]);
-      await Promise.all(toLoad.map(loadWithRetry));
+      // Teljes (types=undefined) preload: deduplikálva — már futó példányt várunk.
+      if (!types && preloadingPromise) {
+        return preloadingPromise;
+      }
+      const run = async (): Promise<void> => {
+        const toLoad = types || (Object.keys(SOUND_CONFIG) as SoundType[]);
+        await Promise.all(toLoad.map(loadWithRetry));
+      };
+      if (!types) {
+        preloadingPromise = run().finally(() => {
+          preloadingPromise = null;
+        });
+        return preloadingPromise;
+      }
+      return run();
     },
     mute: () => {
       isMuted = true;
@@ -183,7 +214,7 @@ function createSoundManager(): SoundManager {
 // Singleton sound manager
 let soundManager: SoundManager | null = null;
 
-function getSoundManager(): SoundManager {
+export function getSoundManager(): SoundManager {
   if (!soundManager) {
     soundManager = createSoundManager();
     if (typeof window !== 'undefined') {

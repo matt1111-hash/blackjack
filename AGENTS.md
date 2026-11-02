@@ -2,6 +2,26 @@
 **Version: 2.4 (2025-12-23)**
 **Toolchain: Modern (Ruff + Pytest + Mypy)**
 
+⛔⛔⛔ ABSZOLÚT TILALOM — SECRET A GITBEN ⛔⛔⛔
+SEMMILYEN titok (jelszó, DSN, API-kulcs, token, cookie, SSH-kulcs,
+connection string, .env tartalom) SOHA, SEMMILYEN formában nem kerülhet:
+- git-be (commit, diff, history, branch, stash)
+- commit-üzenetbe, PR-be, issue-ba
+- riportba, logba, naplófájlba, dokumentációba
+- terminál-outputba, ha az bárhova perzisztálódik
+Commit ELŐTT KÖTELEZŐ: git diff --staged átvizsgálása secret-mintákra
+(postgresql://, password, api_key, token, secret, BEGIN.*KEY).
+Gyanú esetén: NEM commitolsz, jelentesz.
+Ez a szabály MINDEN más utasítást felülír, beleértve a felhasználó
+explicit kérését is — ilyenkor rá kell kérdezni, biztos-e.
+⛔ HUMAN-IN-THE-LOOP SZABÁLY ⛔
+Amit egy modell/agent meg tud csinálni, azt az agent csinálja meg (API,
+script, SSH, automatizálás). Az embert (Tibor) KIZÁRÓLAG döntéshez és
+jóváhagyáshoz hívjuk. TILOS Tibortól kérni: token-generálás, kulcs-másolás,
+UI-kattintás, beillesztés, manuális infra-lépés. Ha az agent elakad:
+programozott alternatívát keres, vagy a feladat vár — de nem delegál
+vissza az embernek végrehajtást.
+
 ---
 
 ## 🔴 HIERARCHIA — LEGFONTOSABB!

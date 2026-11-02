@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Howler } from 'howler';
-import { useSound } from './useSound';
+import { useSound, getSoundManager } from './useSound';
 
 export function useVolume() {
   const [volume, setVolumeState] = useState(0.7);
@@ -8,7 +7,9 @@ export function useVolume() {
   const setMasterVolume = useCallback((v: number) => {
     const clamped = Math.max(0, Math.min(1, v));
     setVolumeState(clamped);
-    Howler.volume(clamped);
+    // Route through the singleton sound manager so masterVolume + Howler.volume
+    // stay in sync (single write path — avoids stale-volume desync on play()).
+    getSoundManager().setVolume(clamped);
   }, []);
 
   const increaseVolume = useCallback(() => {
