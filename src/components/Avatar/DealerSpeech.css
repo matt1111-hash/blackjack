@@ -1,0 +1,35 @@
+/* Az osztó szava: a törzs mellől, a vállmagasságból szól. */
+.dealer-speech {
+  position: absolute;
+  bottom: calc(100% + 14px);
+  left: calc(50% + min(130px, 22vw));
+  pointer-events: none;
+  z-index: 60;
+}
+
+.dealer-speech__bubble {
+  position: relative;
+  background: rgba(11, 8, 7, 0.88);
+  border: 1px solid var(--brass-line);
+  color: var(--brass-200);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  padding: 6px 14px;
+  border-radius: 12px 12px 12px 3px;
+  white-space: nowrap;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
+}
+
+@media (max-width: 540px) {
+  .dealer-speech {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(100% + 10px);
+  }
+
+  .dealer-speech__bubble {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+}

@@ -81,7 +81,7 @@
 
 .sound-settings__slider-fill {
   height: 100%;
-  background: linear-gradient(90deg, #22c55e, #4ade80);
+  background: linear-gradient(90deg, var(--win-500), var(--win-400));
   border-radius: 3px;
 }
 
@@ -91,4 +91,68 @@
   height: 100%;
   opacity: 0;
   cursor: pointer;
+}
+
+@media (max-width: 540px) {
+  .sound-settings {
+    padding: 6px 10px;
+    gap: 8px;
+  }
+
+  /* Mobilon a csúszka fiókba csuklik — a némítás gomb megmarad */
+  .sound-settings__volume {
+    display: none;
+  }
+}
+
+/* Osztó-hang (TTS) toggle */
+.sound-settings__voice-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  font-size: 14px;
+}
+
+.sound-settings__voice-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.sound-settings__voice-btn--off {
+  opacity: 0.55;
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+/* Ambience csúszka */
+.sound-settings__ambience {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sound-settings__ambience-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--ink-soft);
+}
+
+.sound-settings__slider-container--narrow {
+  width: 46px;
+}
+
+.sound-settings__slider-fill--ambience {
+  background: linear-gradient(90deg, var(--gold-600), var(--gold-400));
+}
+
+@media (max-width: 540px) {
+  .sound-settings__ambience {
+    display: none;
+  }
 }

@@ -1,168 +1,131 @@
-/* Premium Playing Card */
+/* Játékkártya — a méret a --card-w tokenből jön (asztal-léptékű, nem ikon). */
 .card {
-  width: 70px;
-  height: 100px;
-  /* Subtle off-white gradient for paper feel */
-  background: linear-gradient(
-    180deg,
-    #fefefe 0%,
-    #f8f8f8 50%,
-    #f5f5f5 100%
-  );
-  border-radius: 6px;
-  /* Multi-layer shadow for 3D depth */
-  box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.1),
-    0 4px 8px rgba(0, 0, 0, 0.1),
-    0 8px 16px rgba(0, 0, 0, 0.15),
-    0 12px 24px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 5px;
-  box-sizing: border-box;
-  user-select: none;
+  width: var(--card-w);
+  height: var(--card-h);
   position: relative;
+  box-sizing: border-box;
+  border-radius: calc(var(--card-w) * 0.075);
+  background: linear-gradient(170deg, var(--card-face-hi) 0%, var(--card-face) 55%, var(--card-face-lo) 100%);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: var(--elev-card);
   overflow: hidden;
-  /* Subtle border for definition */
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  transform-style: preserve-3d;
+  user-select: none;
+  color: var(--card-black);
+  font-family: Georgia, 'Times New Roman', serif;
 }
 
-/* UV coating / semi-gloss effect */
+.card--red {
+  color: var(--card-red);
+}
+
+/* Félfényes lakk: a kulcsfény felső-bal csillanása — egyetlen fényirány. */
 .card::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.15) 0%,
-    rgba(255, 255, 255, 0.05) 30%,
-    transparent 60%
-  );
   pointer-events: none;
-  border-radius: 6px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 38%);
 }
 
-/* Card back - premium design */
+.card__index {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 0.92;
+  z-index: 1;
+}
+
+.card__index--top {
+  top: calc(var(--card-w) * 0.06);
+  left: calc(var(--card-w) * 0.06);
+}
+
+.card__index--bottom {
+  bottom: calc(var(--card-w) * 0.06);
+  right: calc(var(--card-w) * 0.06);
+  transform: rotate(180deg);
+}
+
+.card__rank {
+  font-size: calc(var(--card-w) * 0.25);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.card__suit {
+  font-size: calc(var(--card-w) * 0.19);
+  margin-top: calc(var(--card-w) * 0.01);
+}
+
+.card__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--card-w) * 0.44);
+  opacity: 0.9;
+}
+
+.card__center--ace {
+  font-size: calc(var(--card-w) * 0.62);
+}
+
+/* Figurás lap: keretezett mező, középen nagy serif rang. */
+.card__face-frame {
+  position: absolute;
+  top: 20%;
+  bottom: 20%;
+  left: 22%;
+  right: 22%;
+  border: 1.5px solid currentColor;
+  border-radius: calc(var(--card-w) * 0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2%;
+  background: linear-gradient(180deg, rgba(201, 161, 74, 0.14), rgba(201, 161, 74, 0.04));
+  opacity: 0.92;
+}
+
+.card__face-rank {
+  font-size: calc(var(--card-w) * 0.36);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.card__face-suit {
+  font-size: calc(var(--card-w) * 0.2);
+  line-height: 1;
+}
+
+/* Hátlap: bordó lakk, fehér margó, arany rács — kaszinó-pakli. */
 .card--back {
-  background: linear-gradient(
-    145deg,
-    #1e3a5f 0%,
-    #152a47 30%,
-    #0f2744 60%,
-    #1a3354 100%
-  );
-  border: 1px solid #2d4a6f;
-  box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.15),
-    0 4px 8px rgba(0, 0, 0, 0.15),
-    0 8px 16px rgba(0, 0, 0, 0.2),
-    0 12px 24px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  background: var(--card-face);
+  padding: calc(var(--card-w) * 0.06);
 }
 
-/* Back pattern - diamond lattice */
 .card__pattern {
   position: absolute;
-  inset: 4px;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background-image:
-    /* Diagonal lines */
-    repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 4px,
-      rgba(255, 255, 255, 0.03) 4px,
-      rgba(255, 255, 255, 0.03) 8px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      transparent,
-      transparent 4px,
-      rgba(255, 255, 255, 0.03) 4px,
-      rgba(255, 255, 255, 0.03) 8px
-    );
-  overflow: hidden;
+  inset: calc(var(--card-w) * 0.06);
+  border-radius: calc(var(--card-w) * 0.04);
+  background:
+    repeating-linear-gradient(45deg, transparent 0 5px, rgba(201, 161, 74, 0.22) 5px 6px),
+    repeating-linear-gradient(-45deg, transparent 0 5px, rgba(201, 161, 74, 0.22) 5px 6px),
+    radial-gradient(ellipse at 50% 40%, var(--card-back-700), var(--card-back-900));
+  box-shadow: inset 0 0 0 1px rgba(201, 161, 74, 0.55);
 }
 
-/* Inner decorative border for back */
-.card__pattern::before {
-  content: '';
-  position: absolute;
-  inset: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 3px;
-}
-
-/* Center ornament placeholder */
 .card__pattern::after {
   content: '';
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  width: 30px;
-  height: 30px;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-}
-
-.card__corner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  line-height: 1;
-  position: absolute;
-  z-index: 1;
-}
-
-.card__corner--top {
-  top: 5px;
-  left: 5px;
-}
-
-.card__corner--bottom {
-  bottom: 5px;
-  right: 5px;
-  transform: rotate(180deg);
-}
-
-.card__rank {
-  font-size: 12px;
-  font-weight: 700;
-  color: #1f2937;
-  font-family: 'Georgia', serif;
-  line-height: 1;
-}
-
-.card__suit {
-  font-size: 10px;
-  margin-top: 1px;
-  line-height: 1;
-}
-
-.card__center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 28px;
-  opacity: 0.85;
-  z-index: 1;
-}
-
-/* Red suits */
-.card__corner--top .card__suit.red,
-.card__corner--bottom .card__suit.red,
-.card__center.red {
-  color: #dc2626;
-}
-
-/* Black suits */
-.card__corner--top .card__suit.black,
-.card__corner--bottom .card__suit.black,
-.card__center.black {
-  color: #1f2937;
+  width: 34%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%) rotate(45deg);
+  border: 1.5px solid rgba(201, 161, 74, 0.7);
+  background: var(--card-back-900);
 }

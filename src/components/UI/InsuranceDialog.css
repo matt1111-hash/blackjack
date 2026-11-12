@@ -1,85 +1,57 @@
+/* A horgony központoz (flex), így a framer-motion transformja nem írja felül. */
+.insurance-dialog__anchor {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 120;
+  pointer-events: none;
+}
+
 .insurance-dialog {
-  /* No custom classes needed, tailwind handles it via @tailwind utilities */
-  /* Fallbacks for older tailwind setups without v4 */
+  pointer-events: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-  background-color: rgba(17, 24, 39, 0.95);
-  border: 2px solid #eab308;
-  border-radius: 1rem;
-  box-shadow: 0 0 30px rgba(234, 179, 8, 0.3);
-  z-index: 50;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
+  gap: 8px;
+  padding: 20px 26px;
+  max-width: min(360px, 88%);
+  background: linear-gradient(180deg, var(--lacquer-800), var(--lacquer-950));
+  border: 1px solid var(--brass-500);
+  border-radius: 14px;
+  box-shadow:
+    0 24px 50px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(246, 231, 184, 0.12);
+  color: var(--ink-bright);
+  text-align: center;
 }
 
-.insurance-dialog__icon {
-  color: #eab308;
-  font-size: 2.25rem;
-  line-height: 2.5rem;
-  margin-bottom: 1rem;
+.insurance-dialog__eyebrow {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--brass-500);
 }
 
 .insurance-dialog h2 {
-  font-size: 1.5rem;
-  line-height: 2rem;
+  margin: 0;
+  font-family: Georgia, serif;
+  font-size: 24px;
   font-weight: 700;
-  margin-bottom: 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  text-align: center;
+  color: var(--brass-200);
 }
 
 .insurance-dialog p {
-  color: #d1d5db;
-  margin-bottom: 1.5rem;
-  text-align: center;
-  max-width: 20rem;
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--ink-soft);
 }
 
 .insurance-dialog strong {
-  color: #facc15;
+  color: var(--brass-300);
 }
 
 .insurance-dialog__actions {
   display: flex;
-  gap: 1rem;
-}
-
-.insurance-dialog__btn-buy {
-  padding: 0.75rem 1.5rem;
-  background-color: #eab308;
-  color: #713f12;
-  font-weight: 700;
-  border-radius: 0.5rem;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s;
-}
-
-.insurance-dialog__btn-buy:hover {
-  background-color: #facc15;
-  box-shadow: 0 0 15px rgba(234, 179, 8, 0.5);
-}
-
-.insurance-dialog__btn-decline {
-  padding: 0.75rem 1.5rem;
-  background-color: #374151;
-  color: white;
-  font-weight: 700;
-  border-radius: 0.5rem;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s;
-}
-
-.insurance-dialog__btn-decline:hover {
-  background-color: #4b5563;
+  gap: 10px;
 }

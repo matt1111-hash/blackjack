@@ -1,182 +1,126 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMemo } from 'react';
 import { Hand } from '../Card/Hand';
-import { ActionButtons } from '../UI/ActionButtons';
-import { ChipSelector } from '../UI/ChipSelector';
-import { AnimatedChipStack } from '../Chip/ChipAnimations';
-import { PlayerAvatar } from '../Avatar/PlayerAvatar';
-import type { Hand as HandType, ChipValue } from '../../types';
-import { calculateHandValue } from '../../logic/hand';
+import { BetStack } from '../Chip/BetStack';
+import { HandValueBadge } from '../UI/HandValueBadge';
+import type { Hand as HandType } from '../../types';
+import { calculateHandDetails } from '../../logic/hand';
+import type { RoundResult } from '../../logic/rules';
 import './PlayerArea.css';
 
 interface PlayerAreaProps {
   hands: HandType[];
   activeHandIndex: number;
   currentBet: number;
-  balance: number;
-  onHit: () => void;
-  onStand: () => void;
-  onDouble?: () => void;
-  onSplit?: () => void;
-  onPlaceBet?: (amount: ChipValue) => void;
   gamePhase: string;
-  canDouble?: boolean;
-  canSplit?: boolean;
-  roundResults?: Array<{ playerHandIndex: number; result: string }> | null;
+  /** Csak a koreográfia végén érkezik meg — előbb nem söpörhető el a tét. */
+  roundResults?: RoundResult[] | null;
+  /** Kezdő osztás közben hány lapja látszik az első kéznek. */
+  visiblePlayerCards?: number;
 }
 
+/** A kifizetés profitja (a tét mellé kerül, ahogy élőben). */
+function payoutAmount(hand: HandType, result: RoundResult | undefined): number {
+  if (!result || (result.result !== 'win' && result.result !== 'blackjack')) return 0;
+  return Math.floor(hand.bet * result.payout);
+}
+
+/**
+ * A játékos ülőhelye: lapok a tétkör fölött, érték-jelző a kéz mellett,
+ * a tét fizikai zseton-oszlopként a körben. Nyerésnél az osztó a tét mellé
+ * rakja a kifizetést; vesztésnél a tétet besöpri.
+ */
 export function PlayerArea({
   hands,
   activeHandIndex,
   currentBet,
-  balance,
-  onHit,
-  onStand,
-  onDouble,
-  onSplit,
-  onPlaceBet,
   gamePhase,
-  canDouble = false,
-  canSplit = false,
   roundResults = null,
+  visiblePlayerCards,
 }: PlayerAreaProps) {
-  const isBetting = gamePhase === 'betting';
   const isPlaying = gamePhase === 'playing';
-  const isFinished = gamePhase === 'finished';
 
-  // O(1) lookup for round results
-  const roundResultsMap = useMemo(() => {
-    if (!roundResults) return null;
-    const map = new Map<number, { playerHandIndex: number; result: string }>();
-    for (const result of roundResults) {
-      map.set(result.playerHandIndex, result);
-    }
+  const resultsByHand = useMemo(() => {
+    const map = new Map<number, RoundResult>();
+    for (const result of roundResults ?? []) map.set(result.playerHandIndex, result);
     return map;
   }, [roundResults]);
 
-  // Determine player mood based on game state
-  const getPlayerMood = (): 'neutral' | 'happy' | 'excited' | 'thinking' | 'sad' => {
-    if (isBetting) return 'neutral';
-    if (isFinished && roundResults) {
-      const hasWin = roundResults.some(r => ['win', 'blackjack'].includes(r.result));
-      const hasLoss = roundResults.some(r => r.result === 'lose');
-      if (hasWin) return 'excited';
-      if (hasLoss) return 'sad';
-    }
-    if (isPlaying) return 'thinking';
-    return 'neutral';
-  };
+  if (hands.length === 0) {
+    return (
+      <div className="player-area">
+        <div className="player-area__seat">
+          {currentBet === 0 && <div className="player-area__hint">PLACE YOUR BET TO START</div>}
+          <div className="bet-spot bet-spot--open">
+            <BetStack amount={currentBet} testId="bet-spot-stack" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="player-area">
-      <div className="player-area__avatar">
-        <PlayerAvatar mood={getPlayerMood()} size={56} />
-        <div className="player-area__balance">${balance}</div>
-      </div>
+    <div
+      className={`player-area ${hands.length > 1 ? 'player-area--split' : ''} ${isPlaying ? 'player-area--deciding' : ''}`}
+    >
+      <AnimatePresence mode="popLayout">
+        {hands.map((hand, index) => {
+          const details = calculateHandDetails(hand.cards);
+          const isActive = index === activeHandIndex && isPlaying && hands.length > 1;
+          const result = resultsByHand.get(index);
+          const won = result?.result === 'win' || result?.result === 'blackjack';
+          const lost = result?.result === 'lose';
+          const payout = payoutAmount(hand, result);
+          const cards =
+            visiblePlayerCards !== undefined && index === 0 ? hand.cards.slice(0, visiblePlayerCards) : hand.cards;
 
-      {isBetting && onPlaceBet && (
-        <div className="player-area__betting">
-          <div className="player-area__bet-label">YOUR BET</div>
-          {currentBet > 0 && (
-            <div className="player-area__bet-chips">
-              <AnimatedChipStack
-                chips={[{ value: 25, id: 'bet-chip' }]}
-                vertical={false}
-              />
-            </div>
-          )}
-        </div>
-      )}
+          const seatClass = [
+            'player-area__seat',
+            isActive ? 'player-area__seat--active' : '',
+            hand.isBusted ? 'player-area__seat--busted' : '',
+            result?.result === 'blackjack' ? 'player-area__seat--blackjack' : '',
+          ]
+            .filter(Boolean)
+            .join(' ');
 
-      <div className="player-area__hands">
-        <AnimatePresence mode="popLayout">
-          {hands.map((hand, index) => {
-            const value = calculateHandValue(hand.cards);
-            const isActive = index === activeHandIndex && isPlaying;
-            const isBusted = hand.isBusted;
-            const isStanding = hand.isStanding;
-
-            // Check if this hand won
-            const handResult = roundResultsMap?.get(index);
-            const hasWon = handResult && ['win', 'blackjack'].includes(handResult.result);
-            const hasLost = handResult && handResult.result === 'lose';
-
-            return (
-              <motion.div
-                key={index}
-                className={`player-area__hand ${isActive ? 'player-area__hand--active' : ''} ${isBusted ? 'player-area__hand--busted' : ''}`}
-                data-testid={`player-hand-${index}`}
-                initial={{ scale: 0.8, opacity: 0, y: 30 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              >
-                {hands.length > 1 && (
-                  <div className="player-area__hand-label">HAND {index + 1}</div>
-                )}
-
-                <motion.div
-                  animate={
-                    hasWon
-                      ? { scale: [1, 1.05, 1], borderColor: '#22c55e' }
-                      : hasLost
-                      ? { scale: 0.95, opacity: 0.7 }
-                      : {}
-                  }
-                  transition={{ duration: 0.3 }}
-                >
-                  <Hand cards={hand.cards} spread />
-                </motion.div>
-
-                <motion.div
-                  className={`player-area__hand-value ${isBusted ? 'player-area__hand-value--busted' : ''}`}
-                  data-testid={`player-hand-value-${index}`}
-                  animate={
-                    isBusted
-                      ? { backgroundColor: '#dc2626' }
-                      : hasWon
-                      ? { backgroundColor: '#22c55e' }
-                      : {}
-                  }
-                >
-                  {isBusted ? 'BUST' : isFinished ? value : ''}
-                </motion.div>
-
-                {isActive && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                  >
-                    <ActionButtons
-                      onHit={onHit}
-                      onStand={onStand}
-                      onDouble={onDouble}
-                      onSplit={onSplit}
-                      disabled={isBusted || isStanding}
-                      canDouble={canDouble}
-                      canSplit={canSplit}
+          return (
+            <motion.div
+              key={index}
+              className={seatClass}
+              data-testid={`player-hand-${index}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="player-area__cards">
+                <Hand cards={cards} owner="player" />
+                {cards.length > 0 && (
+                  <div className="player-area__value">
+                    <HandValueBadge
+                      value={details.value}
+                      isSoft={details.isSoft}
+                      isBusted={hand.isBusted}
+                      testId={`player-hand-value-${index}`}
+                      tone={won ? 'win' : lost ? 'lose' : 'neutral'}
                     />
-                  </motion.div>
+                  </div>
                 )}
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
-      </div>
+              </div>
 
-      {hands.length === 0 && isBetting && onPlaceBet && (
-        <motion.div
-          className="player-area__betting-section"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <div className="player-area__empty">
-            PLACE YOUR BET TO START
-          </div>
-          <ChipSelector onPlaceBet={onPlaceBet} balance={balance} />
-        </motion.div>
-      )}
+              <div className={`bet-spot ${hand.isDoubled ? 'bet-spot--doubled' : ''}`}>
+                <BetStack amount={hand.bet} outcome={won ? 'win' : lost ? 'lose' : null} />
+                {payout > 0 && (
+                  <div className="bet-spot__payout">
+                    <BetStack amount={payout} source="dealer" testId={`payout-stack-${index}`} />
+                  </div>
+                )}
+              </div>
+              {hands.length > 1 && <div className="player-area__hand-label">HAND {index + 1}</div>}
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
     </div>
   );
 }

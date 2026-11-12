@@ -1,56 +1,72 @@
-/* Counter-rotate game result overlay for 3D table */
+/* Eredmény-plakett az asztal közepén, a két kéz között: nem takar lapot,
+   nem sötétíti a termet (D5). Kattintás átmegy rajta (pointer-events: none). */
 .game-result-overlay {
   position: absolute;
-  inset: 0;
+  left: 0;
+  right: 0;
+  top: 44%;
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 20px;
-  background: rgba(0, 0, 0, 0.6);
+  gap: 16px;
   z-index: 100;
-  border-radius: 48px;
-  transform: rotateX(-28deg) translateZ(40px);
-  transform-style: preserve-3d;
-  backface-visibility: hidden;
+  pointer-events: none;
 }
 
 .game-result-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 24px 32px;
-  background: linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%);
-  border-radius: 16px;
-  border: 3px solid var(--result-color);
-  box-shadow:
-    0 10px 40px rgba(0, 0, 0, 0.5),
-    0 0 20px color-mix(in srgb, var(--result-color) 30%, transparent);
+  gap: 2px;
+  padding: 10px 26px 9px;
   min-width: 140px;
+  background: linear-gradient(180deg, rgba(33, 24, 18, 0.95), rgba(11, 8, 7, 0.95));
+  border: 1px solid var(--result-color, var(--brass-500));
+  border-radius: 12px;
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.55),
+    0 0 26px color-mix(in srgb, var(--result-color, var(--brass-500)) 28%, transparent),
+    inset 0 1px 0 rgba(246, 231, 184, 0.12);
 }
 
+.game-result-card--win { --result-color: var(--win-500); }
+.game-result-card--lose { --result-color: var(--lose-500); }
+.game-result-card--push { --result-color: var(--brass-300); }
+.game-result-card--blackjack { --result-color: var(--gold-400); }
+
 .game-result__hand-label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  color: rgba(255, 255, 255, 0.5);
-  text-transform: uppercase;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--ink-soft);
 }
 
 .game-result__badge {
-  font-size: 18px;
+  font-family: Georgia, serif;
+  font-size: 22px;
   font-weight: 700;
-  color: white;
-  padding: 8px 20px;
-  border-radius: 8px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 4px;
+  color: var(--result-color, var(--brass-200));
 }
 
 .game-result__payout {
-  font-size: 20px;
+  font-size: 14px;
   font-weight: 700;
-  color: #22c55e;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-variant-numeric: tabular-nums;
+  color: var(--brass-200);
+}
+
+@media (max-width: 540px) {
+  .game-result-overlay {
+    top: 40%;
+    gap: 8px;
+  }
+
+  .game-result-card {
+    min-width: 96px;
+    padding: 8px 14px 7px;
+  }
+
+  .game-result__badge {
+    font-size: 16px;
+    letter-spacing: 2px;
+  }
 }

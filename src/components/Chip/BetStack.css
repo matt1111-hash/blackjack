@@ -1,0 +1,46 @@
+.bet-stack {
+  position: relative;
+  width: 52px;
+}
+
+.bet-stack__chip {
+  position: absolute;
+  left: 0;
+}
+
+/* Az asztal síkjában fekvő zseton: lapított korong + vastag él (oldalnézet). */
+.bet-stack__tilt {
+  transform: scale(0.86, 0.56);
+  transform-origin: 50% 100%;
+  margin-left: -4px;
+}
+
+.bet-stack__tilt .chip {
+  box-shadow:
+    0 2px 0 color-mix(in srgb, var(--chip-edge) 85%, white),
+    0 4px 0 var(--chip-edge),
+    0 6px 0 var(--chip-spot),
+    0 8px 0 color-mix(in srgb, var(--chip-edge) 70%, black),
+    0 14px 10px rgba(0, 0, 0, 0.35);
+}
+
+.bet-stack__amount {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--brass-200);
+  background: rgba(11, 8, 7, 0.72);
+  border: 1px solid var(--brass-line);
+  padding: 1px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  letter-spacing: 0.4px;
+}
+
+.bet-stack--dealer .bet-stack__amount {
+  color: var(--win-400);
+}

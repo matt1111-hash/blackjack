@@ -1,14 +1,28 @@
+/* A kéz szélessége a lapszámból számolódik → mindig valóban középre kerül. */
 .hand {
   position: relative;
-  display: flex;
-  align-items: center;
-  min-width: 120px;
-  min-height: 110px;
+  width: calc(var(--card-w) + (var(--n) - 1) * var(--hand-step));
+  height: var(--card-h);
   transform-style: preserve-3d;
+}
+
+.hand--player {
+  height: calc(var(--card-h) + (var(--n) - 1) * var(--hand-rise));
 }
 
 .hand__card-wrapper {
   position: absolute;
-  transition: transform 0.2s ease-out;
   transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.hand__lift {
+  transition: transform 0.35s cubic-bezier(0.3, 0.1, 0.2, 1), filter 0.35s ease;
+  transform-style: preserve-3d;
+}
+
+/* Szoros helyzet: az osztó megemeli a hole card sarkát, mielőtt megfordítja. */
+.hand__lift--up {
+  transform: translateY(-7px) rotate(-3deg);
+  filter: drop-shadow(0 12px 10px rgba(0, 0, 0, 0.35));
 }

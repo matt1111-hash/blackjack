@@ -37,6 +37,7 @@ export interface GameState {
 
   // Actions
   placeBet: (amount: number) => void;
+  clearBet: () => void;
   deal: () => void;
   hit: () => void;
   stand: () => void;

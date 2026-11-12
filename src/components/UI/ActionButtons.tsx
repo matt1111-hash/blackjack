@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import './ActionButtons.css';
 
 interface ActionButtonsProps {
@@ -11,6 +10,18 @@ interface ActionButtonsProps {
   canSplit?: boolean;
 }
 
+interface ActionSpec {
+  key: string;
+  label: string;
+  shortcut: string;
+  testId: string;
+  onClick: () => void;
+}
+
+/**
+ * Döntési gombok egyetlen anyagból (lakk + réz). A nem elérhető döntés nem
+ * jelenik meg — a pult csak azt kínálja, ami szabályosan választható.
+ */
 export function ActionButtons({
   onHit,
   onStand,
@@ -20,56 +31,35 @@ export function ActionButtons({
   canDouble = false,
   canSplit = false,
 }: ActionButtonsProps) {
+  const specs: ActionSpec[] = [
+    { key: 'hit', label: 'HIT', shortcut: 'H', testId: 'action-hit', onClick: onHit },
+    { key: 'stand', label: 'STAND', shortcut: 'S', testId: 'action-stand', onClick: onStand },
+  ];
+  if (onDouble && canDouble) {
+    specs.push({ key: 'double', label: 'DOUBLE', shortcut: 'D', testId: 'action-double', onClick: onDouble });
+  }
+  if (onSplit && canSplit) {
+    specs.push({ key: 'split', label: 'SPLIT', shortcut: 'P', testId: 'action-split', onClick: onSplit });
+  }
+
   return (
-    <div className="action-buttons">
-      <motion.button
-        className="action-btn action-btn--hit"
-        onClick={onHit}
-        disabled={disabled}
-        data-testid="action-hit"
-        aria-label="Hit"
-        whileHover={!disabled ? { scale: 1.05 } : undefined}
-        whileTap={!disabled ? { scale: 0.95 } : undefined}
-      >
-        HIT
-      </motion.button>
-      <motion.button
-        className="action-btn action-btn--stand"
-        onClick={onStand}
-        disabled={disabled}
-        data-testid="action-stand"
-        aria-label="Stand"
-        whileHover={!disabled ? { scale: 1.05 } : undefined}
-        whileTap={!disabled ? { scale: 0.95 } : undefined}
-      >
-        STAND
-      </motion.button>
-      {onDouble && (
-        <motion.button
-          className="action-btn action-btn--double"
-          onClick={onDouble}
-          disabled={disabled || !canDouble}
-          data-testid="action-double"
-          aria-label="Double"
-          whileHover={!disabled && canDouble ? { scale: 1.05 } : undefined}
-          whileTap={!disabled && canDouble ? { scale: 0.95 } : undefined}
+    <div className="action-buttons" role="group" aria-label="Decisions">
+      {specs.map((spec) => (
+        <button
+          key={spec.key}
+          className={`action-btn action-btn--${spec.key}`}
+          onClick={spec.onClick}
+          disabled={disabled}
+          data-testid={spec.testId}
+          aria-label={spec.label.charAt(0) + spec.label.slice(1).toLowerCase()}
+          aria-keyshortcuts={spec.shortcut}
         >
-          DOUBLE
-        </motion.button>
-      )}
-      {onSplit && (
-        <motion.button
-          className="action-btn action-btn--split"
-          onClick={onSplit}
-          disabled={disabled || !canSplit}
-          data-testid="action-split"
-          aria-label="Split"
-          whileHover={!disabled && canSplit ? { scale: 1.05 } : undefined}
-          whileTap={!disabled && canSplit ? { scale: 0.95 } : undefined}
-        >
-          SPLIT
-        </motion.button>
-      )}
+          <span className="action-btn__label">{spec.label}</span>
+          <span className="action-btn__key" aria-hidden="true">
+            {spec.shortcut}
+          </span>
+        </button>
+      ))}
     </div>
   );
 }

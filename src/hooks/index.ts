@@ -1,2 +1,10 @@
 export { useSound } from './useSound';
 export { useVolume, useGameSounds } from './soundHelpers';
+export { RoundRobinPool, variation, clampVolume } from './soundPool';
+export { useCountUp } from './useCountUp';
+export { useDealChoreography } from './useDealChoreography';
+export { useDealerReveal } from './useDealerReveal';
+export { useDealerVoice } from './useDealerVoice';
+export { useAmbience } from './useAmbience';
+export { useKeyboardShortcuts } from './useKeyboardShortcuts';
+export { useSessionStats, accumulateSession, EMPTY_SESSION } from './useSessionStats';

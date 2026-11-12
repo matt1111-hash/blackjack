@@ -1,0 +1,33 @@
+.chip-tray {
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.chip-tray__rack {
+  display: flex;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: var(--elev-tray);
+}
+
+.chip-tray__slot {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5px;
+}
+
+.chip-tray__chip {
+  width: 16px;
+  height: 4.5px;
+  border-radius: 2px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.chip-tray__slot--1 .chip-tray__chip { background: #e9e3d5; }
+.chip-tray__slot--5 .chip-tray__chip { background: #c0392b; }
+.chip-tray__slot--25 .chip-tray__chip { background: #1e8449; }
+.chip-tray__slot--100 .chip-tray__chip { background: #3a3a3a; }
+.chip-tray__slot--500 .chip-tray__chip { background: #6c3483; }

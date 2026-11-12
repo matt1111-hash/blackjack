@@ -1,0 +1,21 @@
+.session-stats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--muted-text);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.session-stats__dot {
+  opacity: 0.5;
+}
+
+@media (max-width: 540px) {
+  .session-stats {
+    display: none;
+  }
+}

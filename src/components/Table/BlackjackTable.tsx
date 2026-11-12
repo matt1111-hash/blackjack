@@ -1,273 +1,237 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback } from 'react';
+import { AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useShallow } from 'zustand/react/shallow';
 import { useGameStore } from '../../store/gameStore';
+import { SHOE_DECKS } from '../../store/gameHelpers';
 import { useGameSounds } from '../../hooks/soundHelpers';
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
+import { useSessionStats } from '../../hooks/useSessionStats';
+import { useStrategyCoach } from '../../hooks/useStrategyCoach';
+import { useTableGestures } from '../../hooks/useTableGestures';
+import { useTableSpeed } from '../../hooks/useTableSpeed';
 import { canPlayerDouble, canPlayerSplit } from '../../logic/rules';
-import { DealerArea } from './DealerArea';
-import { PlayerArea } from './PlayerArea';
-import { Balance } from '../UI/Balance';
-import { GameResult } from '../UI/GameResult';
-import { SoundSettings } from '../UI/SoundSettings';
-import { InsuranceDialog } from '../UI/InsuranceDialog';
+import { CHOREO_SPEED } from '../../constants/animations';
 import type { ChipValue } from '../../types';
+import { ChipTray } from './ChipTray';
+import { DealerArea } from './DealerArea';
+import { DiscardTray } from './DiscardTray';
+import { PlayerArea } from './PlayerArea';
+import { Shoe } from './Shoe';
+import { TableConsole } from './TableConsole';
+import { TableMarkings } from './TableMarkings';
+import { useBlackjackActions } from './useBlackjackActions';
+import { useDealerCommentary } from './useDealerCommentary';
+import { useTableDirector } from './useTableDirector';
+import { DealerFigure } from '../Avatar/DealerFigure';
+import { DealerSpeech } from '../Avatar/DealerSpeech';
+import { CoachToast } from '../UI/CoachToast';
+import { GameResult } from '../UI/GameResult';
+import { InsuranceDialog } from '../UI/InsuranceDialog';
 import './BlackjackTable.css';
 
-const RESULT_SOUND_DELAY_MS = 500;
+const TOTAL_SHOE_CARDS = SHOE_DECKS * 52;
+const CHIP_VALUES: readonly ChipValue[] = [5, 25, 100, 500];
+const DEALER_NAME = 'MARCO';
+const readSnapshot = () => useGameStore.getState();
 
+/**
+ * Élő kaszinó asztal a játékos székéből nézve: az osztó az asztal mögött,
+ * a félhold-filc előttünk, a döntések az asztal előtti kezelőpulton.
+ */
 export function BlackjackTable() {
-  const {
-    balance,
-    currentBet,
-    dealerHand,
-    playerHands,
-    activeHandIndex,
+  const { balance, currentBet, dealerHand, playerHands, activeHandIndex, phase, roundResults, error, shoeRemaining } =
+    useGameStore(
+      useShallow((state) => ({
+        balance: state.balance,
+        currentBet: state.currentBet,
+        dealerHand: state.dealerHand,
+        playerHands: state.playerHands,
+        activeHandIndex: state.activeHandIndex,
+        phase: state.phase,
+        roundResults: state.roundResults,
+        error: state.error,
+        shoeRemaining: state.shoe.length,
+      })),
+    );
+
+  const sounds = useGameSounds();
+  const reducedMotion = useReducedMotion() ?? false;
+  const pace = useTableSpeed();
+  const speed = reducedMotion ? 0 : CHOREO_SPEED * pace.factor;
+
+  const director = useTableDirector({ phase, playerHands, dealerHand, sounds, speed });
+  const { choreographyDone } = director;
+  const settledResults = choreographyDone ? roundResults : null;
+
+  const session = useSessionStats(roundResults, playerHands);
+  const coach = useStrategyCoach(readSnapshot);
+  const actions = useBlackjackActions({ sounds, phase, currentBet, balance, choreographyDone, error, roundResults });
+
+  const activeHand = playerHands[activeHandIndex];
+  const canDouble = activeHand ? canPlayerDouble(activeHand, balance) : false;
+  const canSplit = playerHands.length === 1 && canPlayerSplit(playerHands[0], balance);
+
+  // A döntéseket az edző a végrehajtás ELŐTTI állapoton méri.
+  const { record } = coach;
+  const { handleHit, handleStand, handleDouble, handleSplit } = actions;
+  const onHit = useCallback(() => {
+    record('hit');
+    handleHit();
+  }, [record, handleHit]);
+  const onStand = useCallback(() => {
+    record('stand');
+    handleStand();
+  }, [record, handleStand]);
+  const onDouble = useCallback(() => {
+    record('double');
+    handleDouble();
+  }, [record, handleDouble]);
+  const onSplit = useCallback(() => {
+    record('split');
+    handleSplit();
+  }, [record, handleSplit]);
+
+  const decisionsOpen = phase === 'playing' && choreographyDone;
+  const gestures = useTableGestures({ enabled: decisionsOpen, onHit, onStand });
+
+  useKeyboardShortcuts({
+    enabled: choreographyDone,
+    phase,
+    canDouble,
+    canSplit,
+    canDeal: phase === 'betting' && currentBet > 0,
+    onHit,
+    onStand,
+    onDouble,
+    onSplit,
+    onDeal: actions.handleDeal,
+    onNewRound: actions.handleNewRound,
+    onChip: actions.handlePlaceBet,
+    onClearBet: actions.handleClearBet,
+    chipValues: CHIP_VALUES,
+  });
+
+  const dealer = useDealerCommentary({
     phase,
     roundResults,
-    error,
-    placeBet,
-    deal,
-    hit,
-    stand,
-    double,
-    split,
-    buyInsurance,
-    declineInsurance,
-    newRound,
-    clearError,
-  } = useGameStore(
-    // Narrow selector: re-render only when one of these fields changes.
-    // Actions are stable references, so they never trigger a re-render.
-    useShallow((state) => ({
-      balance: state.balance,
-      currentBet: state.currentBet,
-      dealerHand: state.dealerHand,
-      playerHands: state.playerHands,
-      activeHandIndex: state.activeHandIndex,
-      phase: state.phase,
-      roundResults: state.roundResults,
-      error: state.error,
-      placeBet: state.placeBet,
-      deal: state.deal,
-      hit: state.hit,
-      stand: state.stand,
-      double: state.double,
-      split: state.split,
-      buyInsurance: state.buyInsurance,
-      declineInsurance: state.declineInsurance,
-      newRound: state.newRound,
-      clearError: state.clearError,
-    }))
-  );
+    dealerHand,
+    playerHands,
+    holeRevealed: director.holeRevealed,
+    dealerVisible: director.dealerVisible,
+    reshuffled: actions.reshuffled,
+    muted: sounds.isMuted ?? false,
+  });
 
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (error) {
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => {
-        clearError();
-      }, 3000);
-    }
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [error, clearError]);
-
-  const dismissError = useCallback(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    clearError();
-  }, [clearError]);
-
-  const {
-    playDealStart,
-    playButtonClick,
-    playCardPlace,
-    playChipDrop,
-    playWin,
-    playLose,
-    playBlackjack,
-  } = useGameSounds();
-
-  // Play result sounds when round finishes
-  useEffect(() => {
-    if (phase !== 'finished' || !roundResults) return;
-
-    let hasWin = false;
-    let hasLose = true;
-    let hasBlackjack = false;
-
-    for (let i = 0; i < roundResults.length; i++) {
-      const result = roundResults[i].result;
-      if (result === 'win' || result === 'blackjack') hasWin = true;
-      if (result !== 'lose') hasLose = false;
-      if (result === 'blackjack') hasBlackjack = true;
-    }
-
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    if (hasBlackjack) {
-      timer = setTimeout(playBlackjack, RESULT_SOUND_DELAY_MS);
-    } else if (hasWin && !hasLose) {
-      timer = setTimeout(playWin, RESULT_SOUND_DELAY_MS);
-    } else if (hasLose) {
-      timer = setTimeout(playLose, RESULT_SOUND_DELAY_MS);
-    }
-
-    // Clear the pending sound if the phase/results change before it fires
-    // (also neutralises StrictMode's double-invoke in dev).
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [phase, roundResults, playWin, playLose, playBlackjack]);
-
-  const handlePlaceBet = (amount: ChipValue) => {
-    playChipDrop();
-    placeBet(amount);
-  };
-
-  const handleDeal = () => {
-    playDealStart();
-    playButtonClick();
-    deal();
-  };
-
-  const handleNewRound = () => {
-    playButtonClick();
-    newRound();
-  };
-
-  const handleHit = () => {
-    playCardPlace();
-    playButtonClick();
-    hit();
-  };
-
-  const handleStand = () => {
-    playButtonClick();
-    stand();
-  };
-
-  const handleDouble = () => {
-    playChipDrop();
-    playButtonClick();
-    double?.();
-  };
-
-  const handleSplit = () => {
-    playChipDrop();
-    playButtonClick();
-    split?.();
-  };
-
-  const handleBuyInsurance = () => {
-    playChipDrop();
-    playButtonClick();
-    buyInsurance();
-  };
-
-  const handleDeclineInsurance = () => {
-    playButtonClick();
-    declineInsurance();
-  };
+  const cardsInPlay = playerHands.reduce((sum, hand) => sum + hand.cards.length, 0) + dealerHand.cards.length;
+  const discarded = Math.max(0, TOTAL_SHOE_CARDS - shoeRemaining - cardsInPlay);
+  const betOnTable = playerHands.length > 0 ? playerHands.reduce((sum, hand) => sum + hand.bet, 0) : currentBet;
 
   return (
-    <div className="blackjack-table">
-      {/* 3D Background Layer - Visual only, no interactive elements */}
-      <div className="blackjack-table__felt-3d" aria-hidden="true">
-        <div className="blackjack-table__center-line-3d" />
+    <div className={`casino-room ${director.tense && director.revealing ? 'casino-room--hushed' : ''}`}>
+      <div className="casino-room__table">
+        <div className="table-frame">
+          <DealerFigure name={DEALER_NAME} dealing={director.dealing} revealing={director.revealing} />
+
+          {/* Az asztal teste: egyetlen döntött réteg (rail + félhold-filc + nyomat). */}
+          <div className="table-frame__stage" aria-hidden="true">
+            <div className="table-rail" />
+            <div className="table-felt">
+              <TableMarkings />
+            </div>
+          </div>
+
+          <div className="table-frame__layer" onPointerDown={gestures.onPointerDown} onPointerUp={gestures.onPointerUp}>
+            <div className="table-frame__props" aria-hidden="true">
+              <DiscardTray discarded={discarded} />
+              <ChipTray />
+              <Shoe remaining={shoeRemaining} />
+            </div>
+
+            <div className="table-frame__dealer">
+              <DealerSpeech line={dealer.line} />
+              <DealerArea
+                hand={dealerHand}
+                visibleCount={director.dealerVisible}
+                holeRevealed={director.holeRevealed}
+                liftHole={director.liftHole}
+                flipDuration={director.flipDuration}
+              />
+            </div>
+
+            <div className="table-frame__player">
+              <PlayerArea
+                hands={playerHands}
+                activeHandIndex={activeHandIndex}
+                currentBet={currentBet}
+                gamePhase={phase}
+                roundResults={settledResults}
+                visiblePlayerCards={director.visiblePlayerCards}
+              />
+            </div>
+
+            <CoachToast feedback={coach.feedback} />
+
+            {phase === 'insurance' && choreographyDone && (
+              <InsuranceDialog
+                onBuy={actions.handleBuyInsurance}
+                onDecline={actions.handleDeclineInsurance}
+                insuranceCost={Math.floor(currentBet / 2)}
+              />
+            )}
+
+            {error && (
+              <div className="table-frame__error" role="alert" data-testid="game-error">
+                <span className="table-frame__error-text">{error.message}</span>
+                <button className="table-frame__error-dismiss" onClick={actions.dismissError} aria-label="Dismiss error">
+                  ×
+                </button>
+              </div>
+            )}
+
+            <AnimatePresence>
+              {phase === 'finished' && settledResults && (
+                <GameResult key="game-result" results={settledResults} hands={playerHands} />
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
       </div>
 
-      {/* 2D Overlay Layer - All interactive elements */}
-      <div className="blackjack-table__overlay">
-        {/* Header with balance and sound settings */}
-        <div className="blackjack-table__header">
-          <Balance balance={balance} />
-          <h1 className="blackjack-table__title">BLACKJACK</h1>
-          <SoundSettings />
-        </div>
-
-        {/* Dealer area */}
-        <div className="blackjack-table__dealer">
-          <DealerArea
-            hand={dealerHand}
-            showHoleCard={phase === 'finished'}
-          />
-        </div>
-
-        {/* Player area */}
-        <div className="blackjack-table__player">
-          <PlayerArea
-            hands={playerHands}
-            activeHandIndex={activeHandIndex}
-            currentBet={currentBet}
-            balance={balance}
-            onHit={handleHit}
-            onStand={handleStand}
-            onDouble={handleDouble}
-            onSplit={handleSplit}
-            onPlaceBet={phase === 'betting' ? handlePlaceBet : undefined}
-            gamePhase={phase}
-            canDouble={
-              playerHands[activeHandIndex]
-                ? canPlayerDouble(playerHands[activeHandIndex], balance)
-                : false
-            }
-            canSplit={playerHands.length === 1 && canPlayerSplit(playerHands[0], balance)}
-            roundResults={roundResults}
-          />
-        </div>
-
-        {/* Deal button when betting */}
-        {phase === 'betting' && currentBet > 0 && (
-          <div className="blackjack-table__deal-btn">
-            <button className="deal-button" onClick={handleDeal} data-testid="deal-button" aria-label="Deal">
-              DEAL
-            </button>
-          </div>
-        )}
-
-        {/* Insurance Dialog */}
-        {phase === 'insurance' && (
-          <InsuranceDialog
-            onBuy={handleBuyInsurance}
-            onDecline={handleDeclineInsurance}
-            insuranceCost={Math.floor(currentBet / 2)}
-          />
-        )}
-
-        {/* New Round button when finished */}
-        {phase === 'finished' && (
-          <div className="blackjack-table__new-round-btn">
-            <button className="deal-button" onClick={handleNewRound} data-testid="new-round-button" aria-label="New round">
-              NEW ROUND
-            </button>
-          </div>
-        )}
-
-        {/* Error toast */}
-        {error && (
-          <div className="blackjack-table__error" role="alert" data-testid="game-error">
-            <span className="blackjack-table__error-text">{error.message}</span>
-            <button
-              className="blackjack-table__error-dismiss"
-              onClick={dismissError}
-              aria-label="Dismiss error"
-            >
-              ×
-            </button>
-          </div>
-        )}
-
-        {/* Game results overlay */}
-        {phase === 'finished' && roundResults && (
-          <GameResult results={roundResults} hands={playerHands} />
-        )}
-
-        {/* Shoe indicator */}
-        <div className="blackjack-table__shoe">
-          <div className="shoe__label">SHOE</div>
-          <div className="shoe__cards">♠ ♥ ♣ ♦</div>
-        </div>
-      </div>
+      <TableConsole
+        phase={phase}
+        balance={balance}
+        betOnTable={betOnTable}
+        currentBet={currentBet}
+        lastBet={actions.lastBet}
+        ready={choreographyDone}
+        canDouble={canDouble}
+        canSplit={canSplit}
+        handStanding={activeHand?.isStanding ?? false}
+        handlers={{
+          onPlaceBet: actions.handlePlaceBet,
+          onClearBet: actions.handleClearBet,
+          onDoubleBet: actions.handleDoubleBet,
+          onRebet: actions.handleRebet,
+          onDeal: actions.handleDeal,
+          onHit,
+          onStand,
+          onDouble,
+          onSplit,
+          onNewRound: actions.handleNewRound,
+          onRebetAndDeal: actions.handleRebetAndDeal,
+        }}
+        settings={{
+          session,
+          coachEnabled: coach.enabled,
+          coachAccuracy: coach.accuracy,
+          coachDecisions: coach.stats.decisions,
+          onToggleCoach: coach.toggle,
+          speed: pace.speed,
+          onToggleSpeed: pace.toggle,
+          voiceEnabled: dealer.voiceOn,
+          onToggleVoice: dealer.toggleVoice,
+        }}
+      />
     </div>
   );
 }

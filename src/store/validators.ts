@@ -77,3 +77,9 @@ export function validateNewRound(state: StateSlice): string | null {
   if (state.phase !== 'finished') return 'Cannot start new round before round is finished';
   return null;
 }
+
+export function validateClearBet(state: StateSlice): string | null {
+  if (state.phase !== 'betting') return 'Cannot clear bet outside betting phase';
+  if (state.currentBet === 0) return 'No bet to clear';
+  return null;
+}

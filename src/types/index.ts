@@ -29,12 +29,6 @@ export interface GameError {
 }
 
 // Chip Types
+// A zseton szín-paletta (test / karima / felirat / él-betét) a
+// styles/tokens.css-ben él (.chip-palette--N osztályok) — egyetlen forrás.
 export type ChipValue = 1 | 5 | 25 | 100 | 500;
-
-export const CHIP_COLORS: Record<ChipValue, string> = {
-  1: '#FFFFFF',
-  5: '#E53935',
-  25: '#43A047',
-  100: '#1E1E1E',
-  500: '#7B1FA2',
-};

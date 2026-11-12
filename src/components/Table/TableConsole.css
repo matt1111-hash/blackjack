@@ -1,0 +1,196 @@
+/* A kezelőpult: az asztal előtti, sötét lakk perem — rézzel szegélyezve. */
+.table-console {
+  position: relative;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+  padding: 12px 22px calc(12px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, var(--lacquer-800) 0%, var(--lacquer-950) 100%);
+  border-top: 1px solid var(--brass-line);
+  box-shadow:
+    0 -14px 30px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(246, 231, 184, 0.08);
+  min-height: 92px;
+  box-sizing: border-box;
+}
+
+.table-console__bank {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.table-console__readout {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.table-console__readout-label {
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  color: var(--brass-500);
+}
+
+.table-console__readout-value {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--brass-200);
+}
+
+.table-console__main {
+  display: flex;
+  justify-content: center;
+  min-height: 52px;
+  align-items: center;
+}
+
+.table-console__betting {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.table-console__betting .chip-selector {
+  transform: scale(0.82);
+  margin: -6px -10px;
+}
+
+.table-console__bet-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.table-console__status {
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: var(--brass-500);
+  animation: hint-breathe 1.6s ease-in-out infinite;
+}
+
+.table-console__meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.table-console__toggles {
+  display: flex;
+  gap: 6px;
+}
+
+.console-chip {
+  font: inherit;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: var(--muted-text);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.console-chip--on {
+  color: var(--brass-300);
+  border-color: var(--brass-line);
+}
+
+.console-chip:hover {
+  color: white;
+}
+
+.console-chip:focus-visible {
+  outline: 2px solid var(--brass-300);
+  outline-offset: 2px;
+}
+
+/* Közepes szélesség: a beállítások a pult alá kerülnek. */
+@media (max-width: 1100px) {
+  .table-console {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'bank main'
+      'meta meta';
+    row-gap: 8px;
+  }
+
+  .table-console__bank {
+    grid-area: bank;
+  }
+
+  .table-console__main {
+    grid-area: main;
+  }
+
+  .table-console__meta {
+    grid-area: meta;
+    justify-content: center;
+  }
+}
+
+/* Mobil: döntési sor felül (hüvelykujj-zóna), bank + beállítások alatta. */
+@media (max-width: 540px) {
+  .table-console {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'main main'
+      'bank meta';
+    gap: 8px;
+    padding: 10px 10px calc(8px + env(safe-area-inset-bottom));
+  }
+
+  .table-console__main > .action-buttons,
+  .table-console__main > .table-console__bet-row {
+    width: 100%;
+  }
+
+  .table-console__bet-row > .console-btn {
+    flex: 1 1 auto;
+    min-width: 0;
+    letter-spacing: 1.5px;
+  }
+
+  /* A tét a filcen, a zseton-oszlop alatt is olvasható — a pulton elég az egyenleg. */
+  .table-console__readout {
+    display: none;
+  }
+
+  .table-console__toggles {
+    gap: 4px;
+  }
+
+  .console-chip {
+    padding: 4px 7px;
+    letter-spacing: 1px;
+  }
+
+  .table-console__betting {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .table-console__betting .chip-selector {
+    transform: scale(0.74);
+    margin: -10px -20px;
+  }
+
+  .table-console__readout-value {
+    font-size: 15px;
+  }
+
+  .table-console__meta {
+    gap: 6px;
+  }
+}

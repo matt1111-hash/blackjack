@@ -7,48 +7,33 @@ interface InsuranceDialogProps {
   insuranceCost: number;
 }
 
+/** Biztosítási ajánlat: az osztó ászt mutat — a játékos dönt, a kör vár. */
 export function InsuranceDialog({ onBuy, onDecline, insuranceCost }: InsuranceDialogProps) {
   return (
-    <motion.div
-      className="insurance-dialog"
-      initial={{ scale: 0.8, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0.8, opacity: 0 }}
-      transition={{ type: 'spring', bounce: 0.4 }}
-    >
+    <div className="insurance-dialog__anchor">
       <motion.div
-        className="insurance-dialog__icon"
-        animate={{ scale: [1, 1.2, 1] }}
-        transition={{ repeat: Infinity, duration: 2 }}
+        className="insurance-dialog"
+        role="dialog"
+        aria-labelledby="insurance-dialog-title"
+        initial={{ scale: 0.96, opacity: 0, y: 8 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.96, opacity: 0 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
       >
-        🛡️
+        <span className="insurance-dialog__eyebrow">DEALER SHOWS AN ACE</span>
+        <h2 id="insurance-dialog-title">Insurance?</h2>
+        <p>
+          Insurance pays 2 to 1 if the dealer has Blackjack. Cost: <strong>${insuranceCost}</strong>
+        </p>
+        <div className="insurance-dialog__actions">
+          <button data-testid="insurance-decline" onClick={onDecline} className="console-btn">
+            DECLINE
+          </button>
+          <button data-testid="insurance-buy" onClick={onBuy} className="console-btn console-btn--primary">
+            BUY (${insuranceCost})
+          </button>
+        </div>
       </motion.div>
-      <h2>
-        Insurance?
-      </h2>
-      <p>
-        Dealer shows an Ace. Protect your hand against Blackjack for <strong>${insuranceCost}</strong>?
-      </p>
-      <div className="insurance-dialog__actions">
-        <motion.button
-          data-testid="insurance-buy"
-          onClick={onBuy}
-          className="insurance-dialog__btn-buy"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          BUY (${insuranceCost})
-        </motion.button>
-        <motion.button
-          data-testid="insurance-decline"
-          onClick={onDecline}
-          className="insurance-dialog__btn-decline"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          DECLINE
-        </motion.button>
-      </div>
-    </motion.div>
+    </div>
   );
 }

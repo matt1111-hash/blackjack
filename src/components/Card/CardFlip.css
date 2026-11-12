@@ -1,7 +1,7 @@
 .card-flip {
-  perspective: 1000px;
-  width: 70px;
-  height: 100px;
+  width: var(--card-w);
+  height: var(--card-h);
+  transform-style: preserve-3d;
 }
 
 .card-flip__inner {
@@ -14,9 +14,9 @@
 .card-flip__front,
 .card-flip__back {
   position: absolute;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .card-flip__back {

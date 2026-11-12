@@ -1,24 +1,24 @@
 import { motion } from 'framer-motion';
 import type { Card as CardType } from '../../types';
-import { CARD_FLIP_DURATION } from '../../constants/animations';
+import { HOLE_CARD_REVEAL_DURATION } from '../../constants/animations';
 import { Card } from './Card';
 import './CardFlip.css';
 
 interface CardFlipProps {
   card: CardType;
-  delay?: number;
+  /** Fordítás hossza (s) — szoros helyzetben a rendező lassítja. */
+  duration?: number;
   className?: string;
-  style?: React.CSSProperties;
 }
 
-export function CardFlip({ card, delay = 0, className = '', style }: CardFlipProps) {
+/** Valódi 3D lapfordítás — a hole card felfedésének dramaturgiája (D10). */
+export function CardFlip({ card, duration = HOLE_CARD_REVEAL_DURATION, className = '' }: CardFlipProps) {
   return (
     <motion.div
       className={`card-flip ${className}`}
-      style={style}
       initial={false}
       animate={{ rotateY: card.faceUp ? 0 : 180 }}
-      transition={{ duration: CARD_FLIP_DURATION, delay, ease: 'easeOut' }}
+      transition={{ duration, ease: [0.45, 0.05, 0.2, 1] }}
     >
       <div className="card-flip__inner">
         <div className="card-flip__front">

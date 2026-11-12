@@ -1,2 +1,2 @@
-export { DealerAvatar } from './DealerAvatar';
-export { PlayerAvatar } from './PlayerAvatar';
+export { DealerFigure } from './DealerFigure';
+export { DealerSpeech } from './DealerSpeech';

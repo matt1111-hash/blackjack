@@ -1,0 +1,45 @@
+.coach-toast {
+  position: absolute;
+  right: 6%;
+  bottom: 30%;
+  z-index: 90;
+  pointer-events: none;
+}
+
+.coach-toast__plate {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(11, 8, 7, 0.82);
+  border: 1px solid var(--brass-line);
+  border-left: 3px solid var(--push-500);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+.coach-toast__label {
+  font-size: 8px;
+  letter-spacing: 2.5px;
+  color: var(--brass-500);
+}
+
+.coach-toast__optimal {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--brass-200);
+}
+
+.coach-toast__played {
+  font-size: 10px;
+  color: var(--muted-text);
+}
+
+@media (max-width: 540px) {
+  .coach-toast {
+    right: 8px;
+    bottom: 40%;
+  }
+}

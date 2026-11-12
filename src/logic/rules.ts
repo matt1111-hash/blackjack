@@ -20,7 +20,7 @@ export function dealerPlay(dealerHand: Hand, shoe: Card[]): { hand: Hand; remain
 
   let details = calculateHandDetails(hand.cards);
 
-  while (shouldDealerHit(details.value, details.isSoft)) {
+  while (shouldDealerHit(details.value)) {
     const dealResult = dealCard(remainingShoe, true);
     if (!dealResult) break;
 
@@ -36,12 +36,12 @@ export function dealerPlay(dealerHand: Hand, shoe: Card[]): { hand: Hand; remain
   return { hand, remainingShoe };
 }
 
-function shouldDealerHit(value: number, soft: boolean): boolean {
-  if (soft) {
-    // Soft 17: hit (since dealer stands on soft 17 is false)
-    return value < DEALER_STAND_VALUE;
-  }
-  // Hard hand: hit if less than 17
+/**
+ * S17: az osztó MINDEN 17-es kéznél megáll — soft 17-et is beleértve.
+ * (Korábban egy soft ág is állt itt azonos kifejezéssel és félrevezető
+ * kommenttel; összevonva, viselkedésváltozás nélkül. D22)
+ */
+function shouldDealerHit(value: number): boolean {
   return value < DEALER_STAND_VALUE;
 }
 

@@ -1,0 +1,237 @@
+/* Fej + törzs: az asztal hátsó pereme mögött, a fejtér (headroom) sávjában.
+   A törzs alja a perem mögé bukik — a fej és a vállak látszanak. */
+.dealer-torso {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% - 40px);
+  width: min(250px, 44%);
+  transform: translateX(-50%);
+  z-index: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.55));
+  animation: dealer-breathe 4.6s ease-in-out infinite;
+  transform-origin: 50% 100%;
+}
+
+@keyframes dealer-breathe {
+  0%,
+  100% {
+    transform: translateX(-50%) scaleY(1);
+  }
+  50% {
+    transform: translateX(-50%) scaleY(1.012);
+  }
+}
+
+.dealer-torso__neck {
+  fill: var(--dealer-skin-shade);
+}
+
+/* --- Fej: egy fénymodell (felső kulcsfény), visszafogott vonások --- */
+.dealer-head__ear {
+  fill: var(--dealer-skin-shade);
+}
+
+.dealer-head__jaw {
+  fill: var(--dealer-skin-shade);
+  opacity: 0.45;
+}
+
+.dealer-head__hair {
+  fill: var(--dealer-hair);
+}
+
+.dealer-head__brow {
+  fill: none;
+  stroke: var(--dealer-hair);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.dealer-head__eye-white {
+  fill: #f1ece4;
+}
+
+.dealer-head__pupils {
+  fill: #2b1d14;
+  transition: transform 0.35s ease;
+}
+
+/* Pislogás: a szem függőlegesen összecsukódik, ritkán és röviden. */
+.dealer-head__eyes {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: dealer-blink 5.2s infinite;
+}
+
+@keyframes dealer-blink {
+  0%,
+  93%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+
+/* A tekintet követi a játékot: osztáskor a shoe felé, felfedéskor a lapra. */
+.dealer-torso--to-shoe .dealer-head__pupils {
+  transform: translate(2.4px, 1.2px);
+}
+
+.dealer-torso--to-table .dealer-head__pupils {
+  transform: translate(0, 1.6px);
+}
+
+.dealer-head__nose {
+  fill: none;
+  stroke: var(--dealer-skin-shade);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dealer-head__mouth {
+  fill: none;
+  stroke: var(--dealer-lip);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+.dealer-head__light {
+  fill: rgba(255, 240, 220, 0.16);
+}
+
+.dealer-torso__shirt {
+  fill: var(--dealer-shirt);
+}
+
+.dealer-torso__collar {
+  fill: var(--dealer-shirt);
+  stroke: var(--dealer-shirt-shade);
+  stroke-width: 1;
+}
+
+.dealer-torso__lapel {
+  fill: rgba(0, 0, 0, 0.25);
+}
+
+.dealer-torso__tie {
+  fill: var(--dealer-tie);
+}
+
+.dealer-torso__button {
+  fill: var(--brass-500);
+}
+
+.dealer-torso__tag rect {
+  fill: var(--brass-300);
+  stroke: var(--brass-700);
+  stroke-width: 0.8;
+}
+
+.dealer-torso__tag text {
+  font-family: Georgia, serif;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  fill: #2a1d0c;
+}
+
+/* Kezek: a perem előtt, a filc felső szélén pihennek. */
+.dealer-hands {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  width: min(400px, 60%);
+  height: 0;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 4;
+}
+
+.dealer-hands__hand {
+  position: absolute;
+  top: 0;
+  width: 40px;
+  height: 47px;
+  filter: drop-shadow(0 6px 5px rgba(0, 0, 0, 0.45));
+  transition: transform 0.45s cubic-bezier(0.3, 0.1, 0.2, 1);
+}
+
+.dealer-hands__hand--left {
+  left: 2%;
+  transform: rotate(14deg);
+}
+
+.dealer-hands__hand--right {
+  right: 2%;
+  transform: rotate(-14deg);
+}
+
+.dealer-hands__cuff {
+  fill: var(--dealer-shirt);
+  stroke: var(--dealer-shirt-shade);
+  stroke-width: 1.2;
+}
+
+.dealer-hands__skin {
+  fill: var(--dealer-skin);
+}
+
+.dealer-hands__shade {
+  fill: none;
+  stroke: var(--dealer-skin-shade);
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.6;
+}
+
+/* Osztás: a shoe felőli (jobb) kéz ütemesen a shoe-hoz nyúl és vissza. */
+.dealer-hands--dealing .dealer-hands__hand--right {
+  animation: dealer-draw 0.4s ease-in-out infinite;
+}
+
+@keyframes dealer-draw {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(-14deg);
+  }
+  45% {
+    transform: translate(46px, 6px) rotate(-30deg);
+  }
+}
+
+/* Felfedés: a bal kéz középre, a hole cardhoz nyúl. */
+.dealer-hands--revealing .dealer-hands__hand--left {
+  transform: translate(84px, 40px) rotate(-6deg);
+}
+
+@media (max-width: 540px) {
+  .dealer-torso {
+    width: 42%;
+    bottom: calc(100% - 22px);
+  }
+
+  /* Keskeny asztalon a kezek a discardra/shoe-ra esnének — a test és a hang elég. */
+  .dealer-hands {
+    display: none;
+  }
+}
+
+/* Alacsony képernyő (laptop): kisebb alak, hogy az asztal kapja a helyet. */
+@media (max-height: 760px) and (min-width: 541px) {
+  .dealer-torso {
+    width: min(200px, 40%);
+    bottom: calc(100% - 36px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dealer-head__eyes,
+  .dealer-torso,
+  .dealer-hands--dealing .dealer-hands__hand--right {
+    animation: none;
+  }
+}

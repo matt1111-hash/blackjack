@@ -13,6 +13,7 @@ import {
 } from './gameHelpers';
 import {
   validatePlaceBet,
+  validateClearBet,
   validateDeal,
   validateHit,
   validateStand,
@@ -49,6 +50,13 @@ export const useGameStore = create<GameState>()(
         set({ balance: state.balance - amount, currentBet: state.currentBet + amount, error: null });
       },
 
+      clearBet: () => {
+        const state = get();
+        const err = validateClearBet(state);
+        if (err) { set(setError('clearBet', err)); return; }
+        set({ balance: state.balance + state.currentBet, currentBet: 0, error: null });
+      },
+
       deal: () => {
         const state = get();
         const err = validateDeal(state);
@@ -65,17 +73,9 @@ export const useGameStore = create<GameState>()(
 
         if (dealerHand.cards[0]?.rank === 'A' && state.balance >= state.currentBet / 2) {
           newPhase = 'insurance';
-        } else if (playerBJ && !dealerBJ) {
-          newPhase = 'finished';
-          dealerHand.cards[1].faceUp = true;
-          results = calculateResults([playerHand], dealerHand);
-          newBalance = applyPayouts(state.balance, results, [playerHand]);
-        } else if (dealerBJ && !playerBJ) {
-          newPhase = 'finished';
-          dealerHand.cards[1].faceUp = true;
-          results = calculateResults([playerHand], dealerHand);
-          newBalance = applyPayouts(state.balance, results, [playerHand]);
-        } else if (playerBJ && dealerBJ) {
+        } else if (playerBJ || dealerBJ) {
+          // Natur blackjack bármelyik oldalon: a kör azonnal lezárul —
+          // a kimenetet a calculateResults dönti el, ezért az ágak közösek.
           newPhase = 'finished';
           dealerHand.cards[1].faceUp = true;
           results = calculateResults([playerHand], dealerHand);

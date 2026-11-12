@@ -1,237 +1,144 @@
-/* Container - provides perspective for 3D layer */
-.blackjack-table {
+/* =====================================================================
+   TEREM + ASZTAL — a játékos székéből nézve
+   .casino-room          → a terem (sor 1: asztal, sor 2: kezelőpult)
+   .table-frame          → az asztal befogó doboza; fölötte az osztó fejtere
+   .table-frame__stage   → az EGYETLEN döntött réteg: rail + félhold-filc + nyomat
+   .table-frame__layer   → nem forgatott réteg: lapok, zsetonok, kellékek
+   ===================================================================== */
+.casino-room {
   width: 100%;
   height: 100vh;
+  height: 100dvh;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  overflow: hidden;
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  box-sizing: border-box;
-  perspective: 1200px;
-  perspective-origin: 50% 30%;
-}
-
-/* 3D Background Layer - Visual only, no pointer events */
-.blackjack-table__felt-3d {
-  width: 100%;
-  max-width: 800px;
-  height: calc(100vh - 16px);
-  max-height: 90vh;
-  pointer-events: none;
-  /* Rich felt green with fabric texture simulation */
   background:
-    /* Subtle noise texture overlay */
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E"),
-    /* Fabric weave pattern */
-    repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 1px,
-      rgba(0, 0, 0, 0.03) 1px,
-      rgba(0, 0, 0, 0.03) 2px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      transparent,
-      transparent 1px,
-      rgba(0, 0, 0, 0.03) 1px,
-      rgba(0, 0, 0, 0.03) 2px
-    ),
-    /* Main gradient for depth */
-    linear-gradient(145deg, #0d5c2e 0%, #0a4a24 40%, #083d1e 70%, #072d17 100%);
-  background-blend-mode: overlay, normal, normal, normal;
-  border-radius: 40px;
-  /* Enhanced 3D shadows */
-  box-shadow:
-    0 25px 80px rgba(0, 0, 0, 0.6),
-    0 15px 40px rgba(0, 0, 0, 0.4),
-    inset 0 0 120px rgba(0, 0, 0, 0.4),
-    inset 0 0 60px rgba(0, 0, 0, 0.2),
-    inset 0 2px 20px rgba(255, 255, 255, 0.03);
-  /* Wood frame border */
-  border: 10px solid #1a1a1a;
-  /* 3D rotation */
-  transform: rotateX(28deg);
-  transform-origin: center center;
-  position: relative;
+    radial-gradient(ellipse 70% 55% at 50% 38%, rgba(255, 228, 180, 0.07) 0%, transparent 70%),
+    repeating-linear-gradient(45deg, transparent 0 26px, var(--room-carpet-line) 26px 28px),
+    repeating-linear-gradient(-45deg, transparent 0 26px, var(--room-carpet-line) 26px 28px),
+    radial-gradient(ellipse 90% 80% at 50% 30%, var(--room-700) 0%, var(--room-900) 55%, var(--room-950) 100%);
 }
 
-/* Inner felt border line */
-.blackjack-table__felt-3d::before {
-  content: '';
-  position: absolute;
-  inset: 15px;
-  border: 2px solid rgba(255, 215, 0, 0.15);
-  border-radius: 32px;
-  box-shadow:
-    0 0 20px rgba(255, 215, 0, 0.05),
-    inset 0 0 20px rgba(255, 215, 0, 0.02);
-}
-
-/* Subtle vignette effect */
-.blackjack-table__felt-3d::after {
+/* Vignetta: a szem az asztalon marad. Feszült felfedésnél a terem elcsendesül. */
+.casino-room::after {
   content: '';
   position: absolute;
   inset: 0;
-  border-radius: 40px;
-  background: radial-gradient(
-    ellipse 80% 60% at 50% 40%,
-    transparent 0%,
-    transparent 50%,
-    rgba(0, 0, 0, 0.15) 100%
-  );
-}
-
-/* Center line in 3D layer */
-.blackjack-table__center-line-3d {
-  position: absolute;
-  top: 50%;
-  left: 50px;
-  right: 50px;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 215, 0, 0.1) 20%,
-    rgba(255, 215, 0, 0.15) 50%,
-    rgba(255, 215, 0, 0.1) 80%,
-    transparent 100%
-  );
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.1);
   pointer-events: none;
+  z-index: 30;
+  background: radial-gradient(ellipse 110% 95% at 50% 45%, transparent 52%, var(--room-vignette) 100%);
+  transition: background 0.6s ease;
 }
 
-/* 2D Overlay Layer - All interactive elements */
-.blackjack-table__overlay {
-  position: absolute;
-  inset: 8px;
+.casino-room--hushed::after {
+  background: radial-gradient(ellipse 80% 70% at 50% 30%, transparent 40%, rgba(0, 0, 0, 0.72) 100%);
+}
+
+.casino-room__table {
+  position: relative;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  min-height: 0;
+  padding: var(--dealer-headroom) 16px 0;
+  perspective: 1500px;
+  perspective-origin: 50% 0%;
+}
+
+.table-frame {
+  position: relative;
+  width: min(1120px, 100%);
+  height: 100%;
+}
+
+/* --- Az asztal teste --- */
+.table-frame__stage {
+  position: absolute;
+  inset: 0 0 -40px;
+  transform: rotateX(16deg);
+  transform-origin: 50% 100%;
   pointer-events: none;
+  z-index: 1;
+}
+
+/* Félhold: egyenes osztói él fent, ív a játékos felé lent. */
+.table-rail {
+  position: absolute;
+  inset: 0;
+  border-radius: 36px 36px 50% 50% / 36px 36px 42% 42%;
+  background: linear-gradient(180deg, var(--rail-500) 0%, var(--rail-700) 40%, var(--rail-900) 100%);
+  box-shadow:
+    0 40px 90px rgba(0, 0, 0, 0.7),
+    inset 0 2px 3px var(--rail-glint),
+    inset 0 -10px 24px rgba(0, 0, 0, 0.55);
+}
+
+.table-rail::before {
+  content: '';
+  position: absolute;
+  inset: 11px;
+  border-radius: 28px 28px 50% 50% / 28px 28px 42% 42%;
+  border: 2px dashed var(--rail-stitch);
+  opacity: 0.5;
+}
+
+.table-felt {
+  position: absolute;
+  inset: 22px 22px 22px;
+  border-radius: 20px 20px 50% 50% / 20px 20px 42% 42%;
+  overflow: hidden;
+  background:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse 70% 62% at 50% 30%, var(--felt-300) 0%, var(--felt-500) 38%, var(--felt-700) 72%, var(--felt-900) 100%);
+  background-blend-mode: soft-light, normal;
+  box-shadow:
+    inset 0 18px 40px rgba(0, 0, 0, 0.45),
+    inset 0 0 120px rgba(0, 0, 0, 0.4);
+}
+
+/* --- Nem forgatott réteg: tárgyak az asztalon --- */
+.table-frame__layer {
+  position: absolute;
+  inset: 0;
   z-index: 10;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding: 14px 28px 26px;
+  box-sizing: border-box;
+  touch-action: manipulation;
 }
 
-/* Make direct children clickable */
-.blackjack-table__overlay > * {
-  pointer-events: auto;
-}
-
-.blackjack-table__header {
+/* Osztói kellékek a hátsó perem mentén: discard balra, tálca középen, shoe jobbra. */
+.table-frame__props {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 10px 28px;
-  flex-shrink: 0;
+  align-items: flex-start;
+  padding: 0 4%;
+  pointer-events: none;
+  min-height: 34px;
+}
+
+.table-frame__dealer {
   position: relative;
-  z-index: 100;
-}
-
-.blackjack-table__title {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 4px;
-  color: #fbbf24;
-  text-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.5),
-    0 0 20px rgba(251, 191, 36, 0.3);
-  margin: 0;
-  text-transform: uppercase;
-}
-
-.blackjack-table__dealer {
-  flex: 1;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: flex-start;
+  padding-top: 6px;
   min-height: 0;
 }
 
-.blackjack-table__player {
-  flex: 1.2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 28px 45px 28px;
-  min-height: 0;
+.table-frame__player {
   position: relative;
-  z-index: 50;
-}
-
-.blackjack-table__deal-btn,
-.blackjack-table__new-round-btn {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 150;
-}
-
-.deal-button {
-  padding: 12px 36px;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  background: linear-gradient(145deg, #22c55e 0%, #16a34a 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  box-shadow:
-    0 4px 15px rgba(0, 0, 0, 0.3),
-    0 8px 25px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
-  transition: all 0.2s ease;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.deal-button:hover {
-  transform: translateY(-2px);
-  background: linear-gradient(145deg, #4ade80 0%, #22c55e 100%);
-  box-shadow:
-    0 6px 20px rgba(0, 0, 0, 0.35),
-    0 12px 35px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-.deal-button:active {
-  transform: translateY(1px);
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.3),
-    inset 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.blackjack-table__shoe {
-  position: absolute;
-  top: 70px;
-  right: 28px;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  opacity: 0.7;
+  justify-content: center;
+  align-items: flex-end;
 }
 
-.shoe__label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  color: rgba(255, 255, 255, 0.6);
-  text-transform: uppercase;
-}
-
-.shoe__cards {
-  font-size: 18px;
-  color: rgba(255, 255, 255, 0.4);
-  letter-spacing: 4px;
-}
-
-/* Error toast */
-.blackjack-table__error {
+/* --- Hiba-toast --- */
+.table-frame__error {
   position: absolute;
-  top: 70px;
+  top: 40%;
   left: 50%;
   transform: translateX(-50%);
   z-index: 200;
@@ -239,33 +146,29 @@
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
-  background: rgba(220, 38, 38, 0.9);
+  background: rgba(127, 29, 29, 0.94);
+  border: 1px solid var(--lose-500);
   border-radius: 10px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
   animation: error-slide-in 0.3s ease;
   max-width: 90%;
 }
 
-.blackjack-table__error-text {
-  font-size: 13px;
+.table-frame__error-text {
+  font-size: 12px;
   font-weight: 600;
   color: white;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.blackjack-table__error-dismiss {
+.table-frame__error-dismiss {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--ink-bright);
   font-size: 20px;
   cursor: pointer;
   padding: 0 4px;
   line-height: 1;
-}
-
-.blackjack-table__error-dismiss:hover {
-  color: white;
 }
 
 @keyframes error-slide-in {
@@ -276,5 +179,41 @@
   to {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* --- Mobil: álló képernyő, keskeny félhold --- */
+@media (max-width: 540px) {
+  .casino-room__table {
+    padding: var(--dealer-headroom) 6px 0;
+  }
+
+  .table-frame__stage {
+    transform: rotateX(10deg);
+    inset: 0 0 -24px;
+  }
+
+  .table-rail {
+    border-radius: 22px 22px 50% 50% / 22px 22px 26% 26%;
+  }
+
+  .table-rail::before {
+    inset: 7px;
+    border-radius: 16px 16px 50% 50% / 16px 16px 26% 26%;
+  }
+
+  .table-felt {
+    inset: 12px;
+    border-radius: 12px 12px 50% 50% / 12px 12px 26% 26%;
+  }
+
+  .table-frame__layer {
+    padding: 10px 10px 18px;
+  }
+
+  .table-frame__props {
+    padding: 0 2%;
+    transform: scale(0.8);
+    transform-origin: 50% 0;
   }
 }

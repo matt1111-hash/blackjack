@@ -1,0 +1,46 @@
+.bet-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.bet-controls__btn {
+  padding: 8px 18px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--ink-gold);
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bet-controls__btn:hover {
+  background: rgba(251, 191, 36, 0.15);
+  border-color: var(--gold-400);
+  transform: translateY(-1px);
+}
+
+.bet-controls__btn--double {
+  color: var(--win-400);
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.bet-controls__btn--double:hover {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: var(--win-500);
+}
+
+.bet-controls__btn--clear {
+  color: var(--steel-400);
+  border-color: rgba(209, 213, 219, 0.4);
+}
+
+.bet-controls__btn--clear:hover {
+  background: rgba(209, 213, 219, 0.12);
+  border-color: var(--steel-400);
+}

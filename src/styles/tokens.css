@@ -1,0 +1,175 @@
+/* =====================================================================
+   DESIGN TOKENEK — egyetlen forrás (LIVE_CASINO_PLAN, Fázis 0 / D20)
+   Szín-literálok KIZÁRÓLAG itt élnek; a komponens-CSS-ek innentől
+   var(--…) hivatkozással dolgoznak. Egy „kaszinó-hangolás” (filc árnyalata,
+   arany hőmérséklete, fény iránya) itt egy helyen módosítható.
+   ===================================================================== */
+:root {
+  /* ---- Terem (szoba a asztal körül) ---- */
+  --room-950: #120b09;
+  --room-900: #1a100c;
+  --room-700: #2b1a13;
+  --room-carpet-line: rgba(255, 196, 130, 0.05);
+  --room-vignette: rgba(0, 0, 0, 0.6);
+  --room-light: rgba(255, 236, 200, 0.1);
+
+  /* ---- Filc ---- */
+  --felt-900: #072d17;
+  --felt-700: #0a4a24;
+  --felt-500: #0d5c2e;
+  --felt-300: #127038;
+  --felt-inner-line: rgba(255, 215, 0, 0.16);
+
+  /* ---- Arany ---- */
+  --gold-300: #fcd34d;
+  --gold-400: #fbbf24;
+  --gold-600: #b45309;
+  --gold-glow: rgba(251, 191, 36, 0.25);
+
+  /* ---- Perem (párnázott bőr rail) ---- */
+  --rail-900: #241108;
+  --rail-700: #4a2413;
+  --rail-500: #6b3a1f;
+  --rail-glint: rgba(255, 214, 170, 0.3);
+  --rail-stitch: rgba(255, 220, 180, 0.35);
+
+  /* ---- HUD szöveg ---- */
+  --ink-bright: rgba(255, 255, 255, 0.92);
+  --ink-soft: rgba(255, 255, 255, 0.78);
+  --ink-gold: var(--gold-400);
+
+  /* ---- Státusz ---- */
+  --win-400: #4ade80;
+  --win-500: #22c55e;
+  --win-600: #16a34a;
+  --lose-500: #ef4444;
+  --lose-600: #dc2626;
+  --push-500: #eab308;
+  --split-500: #8b5cf6;
+  --split-600: #7c3aed;
+
+  /* ---- Kártya ---- */
+  --card-face-hi: #fefefe;
+  --card-face: #f8f6f2;
+  --card-face-lo: #f1efe9;
+  --card-red: #c62828;
+  --card-black: #21252b;
+  --card-back-900: #3d0c16;
+  --card-back-700: #6e1a28;
+  --card-back-line: #c9a14a;
+
+  /* ---- Panelek / acél ---- */
+  --panel-900: #1a1a1a;
+  --panel-700: #0d0d0d;
+  --panel-border: #333333;
+  --muted-text: #8a8a8a;
+  --steel-900: #111827;
+  --steel-700: #374151;
+  --steel-600: #4b5563;
+  --steel-400: #d1d5db;
+
+  /* ---- Avatár ---- */
+  --avatar-bg: #1e293b;
+  --avatar-face: #fcd3b6;
+  --avatar-ink: #1a1a1a;
+  --avatar-blush: #fca5a5;
+  --avatar-tear: #60a5fa;
+  --dealer-hair: #1a1a1a;
+  --dealer-tux: #0f172a;
+  --player-hair: #4a3728;
+  --player-hair-lo: #3a2718;
+  --player-shirt: #1e40af;
+  --player-skin-lo: #d4a574;
+
+  /* ---- Kiemelés (elevation) — EGY fénymodell ----
+     Kulcsfény: az asztal fölött, enyhén a játékos felől → minden árnyék
+     ugyanabba az irányba (lefelé, +y) esik; a magassággal nő a távolság és a blur. */
+  --elev-card:
+    0 1px 1px rgba(0, 0, 0, 0.28),
+    0 3px 5px rgba(0, 0, 0, 0.22),
+    0 10px 18px -6px rgba(0, 0, 0, 0.45);
+  --elev-card-lifted:
+    0 4px 6px rgba(0, 0, 0, 0.2),
+    0 18px 28px -6px rgba(0, 0, 0, 0.5);
+  --elev-chip: 0 6px 10px -2px rgba(0, 0, 0, 0.45);
+  --elev-tray: 0 6px 14px -2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  /* ---- Geometria: lapméret és legyezés (a mobil felülírja) ---- */
+  --card-w: 92px;
+  --card-h: calc(var(--card-w) * 1.4);
+  --hand-step: calc(var(--card-w) * 0.36);
+  --hand-rise: calc(var(--card-w) * 0.1);
+  --dealer-headroom: 156px;
+
+  /* ---- Lakk + réz: a kezelőpult egyetlen anyaga ---- */
+  --lacquer-950: #0b0807;
+  --lacquer-900: #15100d;
+  --lacquer-800: #211812;
+  --lacquer-700: #2f231a;
+  --brass-200: #f6e7b8;
+  --brass-300: #ecd28a;
+  --brass-500: #c9a14a;
+  --brass-700: #8a6a2a;
+  --brass-line: rgba(201, 161, 74, 0.45);
+
+  /* ---- Osztó alakja ---- */
+  --dealer-shirt: #ece8e0;
+  --dealer-shirt-shade: #c9c3b8;
+  --dealer-vest: #1b1b22;
+  --dealer-vest-hi: #2c2c36;
+  --dealer-skin: #d9a988;
+  --dealer-skin-shade: #b98667;
+  --dealer-tie: #6e1a28;
+  --dealer-lip: #8f4f40;
+
+  /* ---- Időzítés ---- */
+  --t-deal: 200ms;
+  --t-flip: 500ms;
+  --t-chip: 250ms;
+  --t-result: 300ms;
+}
+
+@media (max-width: 540px) {
+  :root {
+    --card-w: 60px;
+    --dealer-headroom: 112px;
+  }
+}
+
+@media (max-height: 760px) and (min-width: 541px) {
+  :root {
+    --dealer-headroom: 124px;
+  }
+}
+
+/* ---- Zseton-paletta (test / karima / felirat / él-betét) ---- */
+.chip-palette--1 {
+  --chip-body: #e9e3d5;
+  --chip-edge: #b7ae9c;
+  --chip-text: #3a352c;
+  --chip-spot: #3a352c;
+}
+.chip-palette--5 {
+  --chip-body: #c0392b;
+  --chip-edge: #8e2a20;
+  --chip-text: #ffffff;
+  --chip-spot: #f5f0e6;
+}
+.chip-palette--25 {
+  --chip-body: #1e8449;
+  --chip-edge: #146034;
+  --chip-text: #ffffff;
+  --chip-spot: #f5f0e6;
+}
+.chip-palette--100 {
+  --chip-body: #2b2b2b;
+  --chip-edge: #101010;
+  --chip-text: #fbbf24;
+  --chip-spot: #f5f0e6;
+}
+.chip-palette--500 {
+  --chip-body: #6c3483;
+  --chip-edge: #4a235a;
+  --chip-text: #ffffff;
+  --chip-spot: #f5f0e6;
+}
