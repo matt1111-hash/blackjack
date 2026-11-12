@@ -45,7 +45,9 @@
 
   /* ---------- NAV ---------- */
   .nav{position:sticky;top:0;z-index:50;background:rgba(20,11,8,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-  .nav .in{max-width:1120px;margin:0 auto;display:flex;gap:4px;overflow-x:auto;padding:10px 16px;scrollbar-width:none}
+  .nav .in{max-width:1120px;margin:0 auto;display:flex;gap:4px;overflow-x:auto;padding:10px 130px 10px 16px;scrollbar-width:none}
+  .sound-btn{position:absolute;right:14px;top:50%;transform:translateY(-50%);z-index:60;display:flex;align-items:center;gap:7px;background:linear-gradient(180deg,var(--gold),var(--gold-dp));color:#1a1a1a;border:1px solid var(--gold-hi);border-radius:999px;padding:7px 14px;font-weight:700;font-size:12px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.5);font-family:var(--body)}
+  .sound-btn.off{background:linear-gradient(180deg,#3a2517,#241712);color:var(--muted);border-color:var(--line)}
   .nav .in::-webkit-scrollbar{display:none}
   .nav a{white-space:nowrap;color:var(--muted);text-decoration:none;font-size:13px;padding:7px 12px;border-radius:8px;border:1px solid transparent;transition:.2s}
   .nav a:hover{color:var(--gold-hi);background:rgba(251,191,36,.08)}
@@ -192,6 +194,67 @@
   .reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
   .reveal.vis{opacity:1;transform:none}
 
+  /* ---- status ledger ---- */
+  .ledger{margin:44px 0 0;background:linear-gradient(180deg,var(--panel),var(--room2));border:1px solid var(--line);border-radius:16px;padding:22px}
+  .ledger h2{margin-bottom:6px}
+  .ledger .sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+  .led-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+  .led{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px}
+  .led .t{flex:1}
+  .st{font-size:11px;padding:3px 9px;border-radius:999px;white-space:nowrap;font-weight:600}
+  .st.done{color:#0e2a16;background:var(--ok)}
+  .st.part{color:#2a1a08;background:var(--warn)}
+  .st.open{color:#062a30;background:var(--info)}
+  .st.new{color:#fff;background:var(--neon)}
+
+  /* ---- 09 cross-modal director ---- */
+  .xd{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 0%,#241712,#0d0805 70%);overflow:hidden}
+  .xd .spot{position:absolute;left:50%;top:-10%;width:60%;height:80%;transform:translateX(-50%);background:radial-gradient(50% 60% at 50% 20%,rgba(255,236,200,.25),transparent 70%);mix-blend-mode:screen;transition:transform .8s,opacity .8s}
+  .xd .felt{position:absolute;left:50%;top:58%;width:min(420px,72%);aspect-ratio:16/9;transform:translate(-50%,-50%);border-radius:24px;background:radial-gradient(80% 90% at 50% 40%,var(--felt-lt),var(--felt) 55%,var(--felt-dk));border:10px solid #4a2413}
+  .xd .hole{position:absolute;left:50%;top:40%;width:44px;height:62px;transform:translate(-50%,-50%);border-radius:6px;background:repeating-linear-gradient(45deg,#5a1f2a 0 6px,#3a141c 6px 12px);transition:transform .6s,background .3s;box-shadow:0 6px 14px rgba(0,0,0,.5);z-index:3}
+  .xd .dim{position:absolute;inset:0;background:#000;opacity:0;transition:opacity .8s;pointer-events:none}
+  .xd .lb{position:absolute;left:0;right:0;height:0;background:#000;transition:height .6s;z-index:4}
+  .xd .lb.t{top:0}.xd .lb.b{bottom:0}
+  .xd.tense .dim{opacity:.5}
+  .xd.tense .lb{height:26px}
+  .xd.tense .spot{transform:translateX(-50%) translateY(30px) scale(1.15)}
+  .xd.tense .hole{transform:translate(-50%,-64%) rotateX(22deg)}
+  .xd.revealed .hole{background:#f8f6f2}
+  .xd .res{position:absolute;left:50%;top:76%;transform:translate(-50%,-50%);color:var(--gold-hi);font-family:var(--disp);opacity:0;transition:opacity .5s;z-index:5}
+  .xd.revealed .res{opacity:1}
+
+  /* ---- 10 live seats ---- */
+  .seats{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center;gap:26px;padding-bottom:44px}
+  .seat{width:110px;text-align:center;position:relative}
+  .seat .avatar{width:64px;height:64px;border-radius:50%;margin:0 auto 8px;background:radial-gradient(circle at 35% 30%,#3a4a6a,#1a2440);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:26px}
+  .seat .hand{display:flex;justify-content:center;gap:4px;margin-bottom:6px}
+  .seat .mc{width:26px;height:36px;border-radius:4px;background:#f8f6f2;color:#21252b;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 6px rgba(0,0,0,.4)}
+  .seat .plaque{font-size:11px;color:var(--muted);border:1px dashed var(--line);border-radius:6px;padding:3px 6px}
+  .seat.empty .avatar{background:#241712;border-style:dashed;color:var(--muted);font-size:11px}
+  .seat .bubble{position:absolute;top:-26px;left:50%;transform:translateX(-50%);background:#f5ead9;color:#1a1a1a;font-size:11px;border-radius:8px;padding:3px 8px;opacity:0;transition:.3s;white-space:nowrap}
+  .seat.talk .bubble{opacity:1}
+
+  /* ---- 11 lip-sync ---- */
+  .lip-scene{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:26px}
+  .lip-mouth{transform-origin:75px 78px}
+  .dealer-svg.speaking .lip-mouth{animation:cx-talk .28s infinite}
+  @keyframes cx-talk{0%,100%{transform:scaleY(1)}50%{transform:scaleY(2.4)}}
+
+  /* ---- 12 foil bordó ---- */
+  .foil-row{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:44px;perspective:900px}
+  .foil{width:96px;height:140px;border-radius:10px;position:relative;background:repeating-linear-gradient(45deg,#5a1f2a 0 8px,#3a141c 8px 16px);border:3px solid #6a2a36;box-shadow:0 12px 30px rgba(0,0,0,.5);overflow:hidden}
+  .foil .dia{position:absolute;left:50%;top:50%;width:34px;height:34px;transform:translate(-50%,-50%) rotate(45deg);background:#7a2a36;border:2px solid #9a3a46}
+  .foil .glint{position:absolute;top:-60%;left:-80%;width:50%;height:220%;transform:rotate(20deg);background:linear-gradient(90deg,transparent,rgba(255,220,230,.5),transparent)}
+  .foil.shining .glint{animation:cx-sweep 1.1s ease}
+  .foil .contact{position:absolute;left:50%;bottom:-16px;width:80%;height:12px;transform:translateX(-50%);background:radial-gradient(50% 50% at 50% 50%,rgba(0,0,0,.5),transparent 70%);filter:blur(3px)}
+
+  /* ---- 13 rail toss ---- */
+  .rail-scene{position:absolute;inset:0}
+  .rail{position:absolute;left:0;right:0;top:12%;height:26px;background:linear-gradient(180deg,#6a3a20,#4a2413);border-radius:6px}
+  .rail .tray{position:absolute;left:50%;top:-8px;transform:translateX(-50%);width:120px;height:34px;background:linear-gradient(180deg,#374151,#111827);border:1px solid #4b5563;border-radius:6px}
+  .rail-bet{position:absolute;left:50%;top:66%;width:110px;height:60px;transform:translate(-50%,-50%);border:2px dashed rgba(251,191,36,.5);border-radius:50%}
+  .rail-stack{position:absolute;left:50%;top:66%;transform:translate(-50%,-50%);width:56px;height:70px}
+
   @media (max-width:640px){
     .cards-row{gap:18px}
     .pcard{width:74px;height:108px}
@@ -211,23 +274,42 @@
       <p class="eyebrow">Blackjack · Vizuális koncepciók</p>
       <h1 class="neon">A KASZINÓ KÖVETKEZŐ SZINTJE</h1>
     </div>
-    <p class="sub">A LIVE_CASINO_PLAN 0–8 fázisa már kész: terem, rail, asztal-nyomat, osztási koreográfia, élő osztó, hang. Ez a tábla azt mutatja meg, mi jön <b>ezután</b> — minden ötlet élő demóval, a meglévő kódhoz kötve. Csak presentation; a domain/logic érintetlen.</p>
+    <p class="sub">2. kör: a közbeni fejlesztés (ülő-nézőpont, MARCO osztó kezekkel, pult, oldalnézetű zseton, rendező, edző, kézjelek, zengés, neurális hang) megvalósította az 1. kör javát. Ez a kiadás <b>áttekinti, mi épült meg</b>, és <b>hat új ötletet</b> ad az új állapotra építve — élő demóval, a kódhoz kötve. Csak presentation; a domain/logic érintetlen.</p>
     <div class="chips-row">
-      <span class="tag">8 irány</span><span class="tag">élő demók</span><span class="tag">GPU-barát</span><span class="tag">reduced-motion kész</span>
+      <span class="tag">státusz-review</span><span class="tag">6 új irány</span><span class="tag">élő demók</span><span class="tag">GPU-barát</span><span class="tag">reduced-motion kész</span>
     </div>
   </header>
 
   <nav class="nav"><div class="in" id="nav">
-    <a href="#s1">01 Fény</a><a href="#s2">02 Kamera</a><a href="#s3">03 Kártya</a><a href="#s4">04 Zseton</a>
-    <a href="#s5">05 Osztó</a><a href="#s6">06 Témák</a><a href="#s7">07 Chrome</a><a href="#s8">08 Meta</a><a href="#top5">Top 5</a>
-  </div></nav>
+    <a href="#ledger">Review</a><a href="#s1">01 Fény</a><a href="#s2">02 Kamera</a><a href="#s3">03 Kártya</a><a href="#s4">04 Zseton</a>
+    <a href="#s5">05 Osztó</a><a href="#s6">06 Témák</a><a href="#s7">07 Chrome</a><a href="#s8">08 Meta</a>
+    <a href="#s9">09 Rendező</a><a href="#s10">10 Ülők</a><a href="#s11">11 Lip-sync</a><a href="#s12">12 Fólia</a><a href="#s13">13 Zseton-ív</a><a href="#s14">14 VIP</a><a href="#top5">Top 5</a>
+  </div>
+  <button class="sound-btn" id="soundToggle" aria-pressed="true">🔊 HANG BE</button>
+</nav>
 
   <div class="cx-inner">
+
+    <div class="ledger reveal" id="ledger">
+      <h2>Review — mi épült meg a közbeni fejlesztésből</h2>
+      <p class="sub">Az 1. kör javaslatai vs. a tényleges állapot (ea19f6e + 2. kör). A „részben" azt jelenti: az alap megvan, a demó finomítása még nyitott.</p>
+      <div class="led-grid">
+        <div class="led"><span class="t">02 Kamera / feszült felfedés</span><span class="st part">részben</span></div>
+        <div class="led"><span class="t">05 Osztó kezek + névtábla</span><span class="st done">kész</span></div>
+        <div class="led"><span class="t">04 Zseton oldalnézet / vastagság</span><span class="st done">kész</span></div>
+        <div class="led"><span class="t">07 Réz pult / DEAL gomb</span><span class="st part">részben</span></div>
+        <div class="led"><span class="t">03 Peek / emelés (liftHole)</span><span class="st part">részben</span></div>
+        <div class="led"><span class="t">Edző + kézjelek + zengés</span><span class="st done">kész (új)</span></div>
+        <div class="led"><span class="t">01 Dinamikus fény / por</span><span class="st open">nyitott</span></div>
+        <div class="led"><span class="t">06 Témák / VIP szobák</span><span class="st open">nyitott</span></div>
+        <div class="led"><span class="t">08 Lobby / comps / ticket</span><span class="st open">nyitott</span></div>
+      </div>
+    </div>
 
     <!-- 01 FÉNY -->
     <section class="idea reveal" id="s1">
       <div class="idea-head"><span class="num">01</span><h2>Fény &amp; atmoszféra</h2><span class="kicker">— a terem lélegezzen</span></div>
-      <div class="badges"><span class="b impact">Hatás ★★★★</span><span class="b effort">Effort M</span><span class="b where">BlackjackTable.css + useSpotlight</span></div>
+      <div class="badges"><span class="b impact">Hatás ★★★★</span><span class="b effort">Effort M</span><span class="b where">BlackjackTable.css + useSpotlight</span><span class="st open">nyitott</span></div>
       <div class="card">
         <div class="stage" style="height:340px">
           <div class="room" id="room">
@@ -259,7 +341,7 @@
     <!-- 02 KAMERA -->
     <section class="idea reveal" id="s2">
       <div class="idea-head"><span class="num">02</span><h2>Kamera &amp; dramaturgia</h2><span class="kicker">— rendező az asztal mögött</span></div>
-      <div class="badges"><span class="b impact">Hatás ★★★★★</span><span class="b effort">Effort M</span><span class="b where">useCamera + framer-motion</span></div>
+      <div class="badges"><span class="b impact">Hatás ★★★★★</span><span class="b effort">Effort M</span><span class="b where">useCamera + framer-motion</span><span class="st part">részben</span></div>
       <div class="card">
         <div class="stage" style="height:340px">
           <div class="cam-viewport" id="camVp">
@@ -293,7 +375,7 @@
     <!-- 03 KÁRTYA -->
     <section class="idea reveal" id="s3">
       <div class="idea-head"><span class="num">03</span><h2>Kártya-anyagok</h2><span class="kicker">— fólia, peek, súrlódás</span></div>
-      <div class="badges"><span class="b impact">Hatás ★★★★</span><span class="b effort">Effort S</span><span class="b where">Card.tsx / CardFlip.tsx</span></div>
+      <div class="badges"><span class="b impact">Hatás ★★★★</span><span class="b effort">Effort S</span><span class="b where">Card.tsx / CardFlip.tsx</span><span class="st part">részben</span></div>
       <div class="card">
         <div class="stage" style="height:300px">
           <div class="cards-row">
@@ -318,7 +400,7 @@
     <!-- 04 ZSETON -->
     <section class="idea reveal" id="s4">
       <div class="idea-head"><span class="num">04</span><h2>Zseton-fizika</h2><span class="kicker">— a tétnek súlya van</span></div>
-      <div class="badges"><span class="b impact">Hatás ★★★★★</span><span class="b effort">Effort M</span><span class="b where">BetStack.tsx / ChipTray.tsx</span></div>
+      <div class="badges"><span class="b impact">Hatás ★★★★★</span><span class="b effort">Effort M</span><span class="b where">BetStack.tsx / ChipTray.tsx</span><span class="st part">részben</span></div>
       <div class="card">
         <div class="stage" style="height:320px">
           <div class="chip-scene" id="chipScene">
@@ -343,7 +425,7 @@
     <!-- 05 OSZTÓ -->
     <section class="idea reveal" id="s5">
       <div class="idea-head"><span class="num">05</span><h2>Élő osztó</h2><span class="kicker">— keze, szeme, hangja</span></div>
-      <div class="badges"><span class="b impact">Hatás ★★★★</span><span class="b effort">Effort M</span><span class="b where">DealerAvatar.tsx</span></div>
+      <div class="badges"><span class="b impact">Hatás ★★★★</span><span class="b effort">Effort M</span><span class="b where">DealerFigure.tsx</span><span class="st part">részben</span></div>
       <div class="card">
         <div class="stage" style="height:300px">
           <div class="dealer-scene" id="dealerScene">
@@ -379,7 +461,7 @@
     <!-- 06 TÉMÁK -->
     <section class="idea reveal" id="s6">
       <div class="idea-head"><span class="num">06</span><h2>Témák / VIP szobák</h2><span class="kicker">— egy token, négy kaszinó</span></div>
-      <div class="badges"><span class="b impact">Hatás ★★★★</span><span class="b effort">Effort S</span><span class="b where">tokens.css [data-theme]</span></div>
+      <div class="badges"><span class="b impact">Hatás ★★★★</span><span class="b effort">Effort S</span><span class="b where">tokens.css [data-theme]</span><span class="st open">nyitott</span></div>
       <div class="card">
         <div class="stage" style="height:300px">
           <div class="theme-scene">
@@ -405,7 +487,7 @@
     <!-- 07 CHROME -->
     <section class="idea reveal" id="s7">
       <div class="idea-head"><span class="num">07</span><h2>UI chrome &amp; fény-jelzések</h2><span class="kicker">— réz, üveg, izzó</span></div>
-      <div class="badges"><span class="b impact">Hatás ★★★★</span><span class="b effort">Effort S</span><span class="b where">ActionButtons.css / LightBar.tsx</span></div>
+      <div class="badges"><span class="b impact">Hatás ★★★★</span><span class="b effort">Effort S</span><span class="b where">TableConsole.css / LightBar.tsx</span><span class="st part">részben</span></div>
       <div class="card">
         <div class="stage" style="height:300px">
           <div class="chrome-scene">
@@ -428,7 +510,7 @@
     <!-- 08 META -->
     <section class="idea reveal" id="s8">
       <div class="idea-head"><span class="num">08</span><h2>Kaszinó-keret &amp; meta</h2><span class="kicker">— lobby, comps, ticket</span></div>
-      <div class="badges"><span class="b impact">Hatás ★★★</span><span class="b effort">Effort L</span><span class="b where">Lobby / CompsMeter / Ticket</span></div>
+      <div class="badges"><span class="b impact">Hatás ★★★</span><span class="b effort">Effort L</span><span class="b where">Lobby / CompsMeter / Ticket</span><span class="st open">nyitott</span></div>
       <div class="card">
         <div class="stage" style="height:320px">
           <div class="meta-scene">
@@ -454,17 +536,165 @@
       </div>
     </section>
 
+    <!-- 09 RENDEZŐ -->
+    <section class="idea reveal" id="s9">
+      <div class="idea-head"><span class="num">09</span><h2>Kereszt-modális rendező</h2><span class="kicker">— egy jel: fény + hang + kamera</span></div>
+      <div class="badges"><span class="b impact">Hatás ★★★★★</span><span class="b effort">Effort M</span><span class="b where">useTableDirector → useLightDirector</span><span class="st new">új</span></div>
+      <div class="card">
+        <div class="stage" style="height:320px">
+          <div class="xd" id="xd">
+            <div class="spot"></div><div class="felt"></div><div class="hole"></div>
+            <div class="dim"></div><div class="lb t"></div><div class="lb b"></div>
+            <div class="res">OSZTÓ: 19</div>
+          </div>
+        </div>
+        <div class="controls">
+          <button class="ctl primary" id="xdBtn">Feszült felfedés</button>
+          <button class="ctl" id="xdFollow" aria-pressed="true">Fény követi az akciót</button>
+          <button class="ctl" id="xdReset">Reset</button>
+        </div>
+        <div class="desc">
+          <p>A useTableDirector már kiadja a tense/revealing jeleket — kösd rá a fényt és a kamerát is: feszült felfedésnél a terem halkul, a spot az osztóra lép, letterbox csúszik be, a hole card lassan fordul. A hang (ducking + zengés) már ezt csinálja; a vizuális párja nélkül most féloldalas a dráma.</p>
+          <span class="anchor">useTableDirector.ts tense/revealing → új useLightDirector + kamera-transform · roomReverb/ducking már szinkronban van</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 ÜLŐK -->
+    <section class="idea reveal" id="s10">
+      <div class="idea-head"><span class="num">10</span><h2>Élő asztal — ülő-társak</h2><span class="kicker">— nem üres a félhold</span></div>
+      <div class="badges"><span class="b impact">Hatás ★★★★</span><span class="b effort">Effort M</span><span class="b where">PlayerArea / BlackjackTable</span><span class="st new">új</span></div>
+      <div class="card">
+        <div class="stage" style="height:300px">
+          <div class="seats" id="seats">
+            <div class="seat empty" data-seat><div class="bubble">Foglalt</div><div class="avatar">RESERVED</div><div class="plaque">Seat 2</div></div>
+            <div class="seat" data-seat><div class="bubble">Duplázok!</div><div class="avatar">🧑</div><div class="hand"><span class="mc">K</span><span class="mc">9</span></div><div class="plaque">Te · $125</div></div>
+            <div class="seat" data-seat><div class="bubble">Nem rossz…</div><div class="avatar">👩</div><div class="hand"><span class="mc">A</span><span class="mc">7</span></div><div class="plaque">Vendég · $50</div></div>
+          </div>
+        </div>
+        <div class="controls">
+          <button class="ctl primary" id="seatTalk">Szomszéd reakció</button>
+          <button class="ctl" id="seatEmpty" aria-pressed="true">Üres ülések</button>
+        </div>
+        <div class="desc">
+          <p>A félhold-asztal most egyetlen ülős. Adj hozzá reserved táblákat és 1–2 AI szomszédöt, akik reagálnak a körre (buborék, kéz, tét). Ettől lesz „élő asztal", nem magányos gyakorló — a kaszinó társas tér. A domain nem változik, csak a presentation népesíti be.</p>
+          <span class="anchor">BlackjackTable.tsx seat-sor · PlayerArea.tsx · új NeighborSeat.tsx (csak vizuális, nem játszik valódi kézzel)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11 LIP-SYNC -->
+    <section class="idea reveal" id="s11">
+      <div class="idea-head"><span class="num">11</span><h2>Osztó 2.0 — lip-sync</h2><span class="kicker">— a neurális hanghoz száj</span></div>
+      <div class="badges"><span class="b impact">Hatás ★★★★</span><span class="b effort">Effort S</span><span class="b where">DealerFigure + voiceLines</span><span class="st new">új</span></div>
+      <div class="card">
+        <div class="stage" style="height:300px">
+          <div class="lip-scene">
+            <svg class="dealer-svg" id="lipSvg" viewBox="0 0 150 170">
+              <g class="dealer-body">
+                <rect x="45" y="95" width="60" height="70" rx="14" fill="#0f172a"/>
+                <rect x="68" y="95" width="14" height="40" fill="#f5ead9"/>
+                <circle cx="75" cy="60" r="30" fill="#fcd3b6"/>
+                <path d="M45 52 a30 30 0 0 1 60 0 l0 -8 a30 26 0 0 0 -60 0 z" fill="#1a1a1a"/>
+                <circle cx="64" cy="60" r="2.6" fill="#1a1a1a"/><circle cx="86" cy="60" r="2.6" fill="#1a1a1a"/>
+                <path class="lip-mouth" d="M66 76 q9 6 18 0" stroke="#1a1a1a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+              </g>
+            </svg>
+            <div class="dealer-bubble" id="lipBubble">Nincs több tét!</div>
+          </div>
+        </div>
+        <div class="controls">
+          <button class="ctl primary" id="lipBtn">Beszéd (lip-sync)</button>
+          <span class="ctl-label" style="margin-left:auto">A Piper-hang 3 take-je már megvan</span>
+        </div>
+        <div class="desc">
+          <p>A neurális osztó-hang (Piper, 3 take) már szól, de a száj áll. Indítsd a beszéd alatt a száj-animációt (amplitúdó-vezérelt scaleY), és a szem kövesse az aktív lapot. A hang és az arc együtt lesz személy — a buborék önmagában kevés.</p>
+          <span class="anchor">DealerFigure.tsx lip-mouth réteg · voiceLines.ts / useDealerVoice onstart/onend → speaking class</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12 FÓLIA -->
+    <section class="idea reveal" id="s12">
+      <div class="idea-head"><span class="num">12</span><h2>Fólia a bordó hátlapon</h2><span class="kicker">— az új back kapjon fényt</span></div>
+      <div class="badges"><span class="b impact">Hatás ★★★★</span><span class="b effort">Effort S</span><span class="b where">Card.css (bordó back)</span><span class="st new">új</span></div>
+      <div class="card">
+        <div class="stage" style="height:300px">
+          <div class="foil-row">
+            <div class="foil" id="foilA"><div class="dia"></div><div class="glint"></div><div class="contact"></div></div>
+            <div class="foil" id="foilB"><div class="dia"></div><div class="glint"></div><div class="contact"></div></div>
+          </div>
+        </div>
+        <div class="controls">
+          <button class="ctl primary" id="foilBtn">Csillanás a hátlapon</button>
+          <span class="ctl-label" style="margin-left:auto">Kontakt-árnyék a filcen</span>
+        </div>
+        <div class="desc">
+          <p>A 2. kör bordó, gyémántos hátlapot kapott — ez tökéletes hordozó a fólia-speculárnak. Egy gradient-sweep a back-en forduláskor, plusz kontakt-árnyék, hogy a lap a filcen feküdjön, ne lebegjen. Kis effort, nagy tárgy-érzet.</p>
+          <span class="anchor">Card.css ::after sweep a .back-en · contact shadow = radial-gradient · CardFlip.tsx trigger</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13 ZSETON-ÍV -->
+    <section class="idea reveal" id="s13">
+      <div class="idea-head"><span class="num">13</span><h2>Zseton-ív a rail-tálcáról</h2><span class="kicker">— a tét a helyéről repül</span></div>
+      <div class="badges"><span class="b impact">Hatás ★★★★★</span><span class="b effort">Effort M</span><span class="b where">ChipTray → BetStack</span><span class="st new">új</span></div>
+      <div class="card">
+        <div class="stage" style="height:320px">
+          <div class="rail-scene" id="railScene">
+            <div class="rail"><div class="tray"></div></div>
+            <div class="rail-bet"></div>
+            <div class="rail-stack" id="railStack"></div>
+          </div>
+        </div>
+        <div class="controls">
+          <button class="ctl primary" id="railBet">Tét a tálcáról +$25</button>
+          <button class="ctl" id="railSweep">Söprés</button>
+        </div>
+        <div class="desc">
+          <p>A zseton-tálca most a railen van (mint élőben), de a tét még mindig csak megjelenik. Repüljön ívben a tálcából a tétkörbe, pörögve, koccanással — a chip-stack hang már megvan. A pénz útja látható lesz, nem teleportál.</p>
+          <span class="anchor">ChipTray.tsx → BetStack.tsx Web Animations ív · chip-stack hang szinkron · oldalnézet már kész</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 14 VIP -->
+    <section class="idea reveal" id="s14">
+      <div class="idea-head"><span class="num">14</span><h2>VIP szoba + reverb-pár</h2><span class="kicker">— a terem hangja is vált</span></div>
+      <div class="badges"><span class="b impact">Hatás ★★★★</span><span class="b effort">Effort M</span><span class="b where">tokens.css + roomReverb</span><span class="st new">új</span></div>
+      <div class="card">
+        <div class="stage" style="height:320px">
+          <div class="vip-scene">
+            <div class="theme-table" id="vipTable" data-theme="classic"><div class="tcard"></div><div class="mark">BLACKJACK PAYS 3 TO 2</div></div>
+            <div class="comps"><div class="tier"><span>Terem-zengés</span><span id="revLabel">Main hall</span></div><div class="bar"><div class="fill" id="revFill" style="width:60%"></div></div></div>
+            <div class="ticket" id="vipTicket"><b>★ TITO TICKET ★</b><div class="dash"></div>CASHOUT&nbsp;&nbsp;$1,250<br>ROOM&nbsp;&nbsp;&nbsp;&nbsp;VIP<div class="dash"></div>THANK YOU</div>
+          </div>
+        </div>
+        <div class="controls">
+          <button class="ctl" data-viptheme="classic" aria-pressed="true">Main hall</button>
+          <button class="ctl" data-viptheme="monte">Monte Carlo</button>
+          <button class="ctl" data-viptheme="macau">VIP Salon</button>
+          <button class="ctl primary" id="vipTicketBtn">Ticket</button>
+        </div>
+        <div class="desc">
+          <p>A roomReverb convolver már terem-hangot ad — kösd a témához: a VIP salon szűkebb, szárazabb zengést és sötétebb filcet kap, a main hall nagyobbat. A látvány és a hang együtt vált szobát, ettől lesz hiteles a tér. A ticket a kifizetés rituáléja.</p>
+          <span class="anchor">tokens.css [data-theme] · roomReverb.ts wet/dry preset szobánként · Ticket.tsx</span>
+        </div>
+      </div>
+    </section>
+
     <!-- TOP5 -->
     <div class="top5 reveal" id="top5">
       <h2>Ajánlott sorrend — a legjobb hatás / effort arány</h2>
       <ol>
-        <li><b>02 Kamera + letterbox</b> — legnagyobb dráma-ugrás, kevés kód, a koreográfia már megvan hozzá.</li>
-        <li><b>03 Fólia shine + peek</b> — a lapból tárgy lesz; S effort, azonnal látható.</li>
-        <li><b>01 Fény-dimmer + por</b> — a terem él; a fénykúp és a tokenek már adottak.</li>
-        <li><b>07 Réz gombok + light bar</b> — azonnali prémium érzet, tisztán CSS.</li>
-        <li><b>06 Témák</b> — olcsó a tokens.css miatt, nagy wow, lobby-alap.</li>
+        <li><b>09 Kereszt-modális rendező</b> — a useTableDirector jelei már megvannak; fény+kamera rákötése a legnagyobb dráma-ugrás.</li>
+        <li><b>13 Zseton-ív a rail-tálcáról</b> — a pénz útja látható lesz; a chip-stack hang és az oldalnézet már kész.</li>
+        <li><b>12 Fólia a bordó hátlapon</b> — S effort, azonnali tárgy-érzet az új back-en.</li>
+        <li><b>11 Osztó lip-sync</b> — a neurális hanghoz arc; S effort, személy lesz az ikonból.</li>
+        <li><b>14 VIP szoba + reverb-pár</b> — látvány és hang együtt vált szobát; a tokenek + convolver már adottak.</li>
       </ol>
-      <p class="foot-note">Minden demó GPU-barát (transform/opacity), prefers-reduced-motion esetén kikapcsol. A domain/logic réteg érintetlen marad — csak a presentation bővül, ahogy a LIVE_CASINO_PLAN tette. A hangok (chip-win, card-slide, ambience) már lemezen vannak, csak szinkronba hozni a vizuállal.</p>
+      <p class="foot-note">Minden demó GPU-barát (transform/opacity), prefers-reduced-motion esetén kikapcsol. A domain/logic érintetlen — csak a presentation bővül. A 2. körben a hang (ducking, zengés, Piper) már előrébb jár a vizuálnál: a fenti ötletek éppen ezt a két oldalt hozzák egyensúlyba.</p>
     </div>
 
   </div>
@@ -474,6 +704,68 @@
 (function(){
   "use strict";
   var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---- WebAudio sound engine (self-authored, no external assets) ----
+  var soundOn=true, AC=null, master=null, sfx=null, conv=null, wet=null, ambStarted=false, whiteB=null, brownB=null;
+  function ac(){ if(AC)return AC; var C=window.AudioContext||window.webkitAudioContext; if(!C)return null;
+    AC=new C(); master=AC.createGain(); master.gain.value=soundOn?0.9:0; master.connect(AC.destination);
+    sfx=AC.createGain(); sfx.connect(master); conv=AC.createConvolver(); wet=AC.createGain(); wet.gain.value=.22;
+    sfx.connect(conv); conv.connect(wet); wet.connect(master); setRoom("classic"); return AC; }
+  function noiseBuf(kind,dur){ var a=ac(); var len=Math.floor(a.sampleRate*dur); var b=a.createBuffer(1,len,a.sampleRate); var d=b.getChannelData(0); var last=0;
+    for(var i=0;i<len;i++){ var w=Math.random()*2-1; if(kind==="brown"){ last=(last+.02*w)/1.02; d[i]=last*3.5; } else d[i]=w; } return b; }
+  function white(){ if(!whiteB)whiteB=noiseBuf("white",1); return whiteB; }
+  function brown(){ if(!brownB)brownB=noiseBuf("brown",2.5); return brownB; }
+  function makeIR(dur,decay){ var a=ac(); var len=Math.floor(a.sampleRate*dur); var b=a.createBuffer(2,len,a.sampleRate);
+    for(var ch=0;ch<2;ch++){ var d=b.getChannelData(ch); for(var i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,decay); } return b; }
+  var rooms={classic:[1.6,2.6,.24],monte:[1.2,2.8,.18],vegas:[1.4,2.4,.2],macau:[.7,3.2,.12]};
+  function setRoom(t){ var a=ac(); if(!a)return; var r=rooms[t]||rooms.classic; conv.buffer=makeIR(r[0],r[1]); wet.gain.value=r[2]; }
+  function tone(f,type,t,dur,peak,slideTo){ var a=AC; var o=a.createOscillator(),g=a.createGain(); o.type=type; o.frequency.setValueAtTime(f,t);
+    if(slideTo)o.frequency.exponentialRampToValueAtTime(slideTo,t+dur);
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(peak,t+.008); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.connect(g); g.connect(sfx); o.start(t); o.stop(t+dur+.05); }
+  function noise(t,dur,type,f,peak,fTo){ var a=AC; var s=a.createBufferSource(); s.buffer=white(); s.loop=true;
+    var fl=a.createBiquadFilter(); fl.type=type; fl.frequency.setValueAtTime(f,t); if(fTo)fl.frequency.exponentialRampToValueAtTime(fTo,t+dur);
+    var g=a.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(peak,t+.012); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    s.connect(fl); fl.connect(g); g.connect(sfx); s.start(t); s.stop(t+dur+.05); }
+  function thump(t,peak){ tone(110,"sine",t,.14,peak||.12,55); }
+  var SFX={
+    click:function(){ var a=ac(); if(!a||!soundOn)return; tone(1700,"square",a.currentTime,.05,.03); },
+    tick:function(){ var a=ac(); if(!a||!soundOn)return; tone(1200,"sine",a.currentTime,.05,.05); },
+    clink:function(p){ var a=ac(); if(!a||!soundOn)return; var t=a.currentTime; p=p||.07;
+      [2400,3600,5100].forEach(function(f,i){ tone(f,"sine",t+i*.006,.09,p*(1-i*.22)); }); noise(t,.03,"highpass",4200,p*.5); },
+    slide:function(){ var a=ac(); if(!a||!soundOn)return; noise(a.currentTime,.16,"bandpass",2400,.1,700); },
+    place:function(){ var a=ac(); if(!a||!soundOn)return; var t=a.currentTime; tone(300,"triangle",t,.07,.08); noise(t,.05,"lowpass",900,.07); },
+    flip:function(){ var a=ac(); if(!a||!soundOn)return; SFX.slide(); setTimeout(function(){SFX.place();},120); },
+    shine:function(){ var a=ac(); if(!a||!soundOn)return; var t=a.currentTime; tone(3200,"sine",t,.25,.035); tone(4800,"sine",t+.05,.3,.025); },
+    coin:function(){ var a=ac(); if(!a||!soundOn)return; var t=a.currentTime; for(var i=0;i<6;i++)tone(1700+i*260+Math.random()*120,"sine",t+i*.06,.18,.05); },
+    win:function(){ var a=ac(); if(!a||!soundOn)return; var t=a.currentTime; SFX.coin(); [523,659,784,1046].forEach(function(f,i){ tone(f,"triangle",t+i*.09,.16,.06); }); },
+    thud:function(){ var a=ac(); if(!a||!soundOn)return; var t=a.currentTime; thump(t,.2); noise(t,.12,"lowpass",300,.12); },
+    sweep:function(){ var a=ac(); if(!a||!soundOn)return; noise(a.currentTime,.3,"lowpass",1200,.1,300); },
+    whoosh:function(){ var a=ac(); if(!a||!soundOn)return; var t=a.currentTime; noise(t,.2,"lowpass",400,.07,2400); noise(t+.2,.2,"lowpass",2400,.06,400); },
+    tension:function(){ var a=ac(); if(!a||!soundOn)return; var t=a.currentTime;
+      [55,55.7].forEach(function(f){ var o=a.createOscillator(); o.type="sawtooth"; o.frequency.value=f; var fl=a.createBiquadFilter(); fl.type="lowpass"; fl.frequency.value=260;
+        var g=a.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.05,t+.4); g.gain.setValueAtTime(.05,t+1); g.gain.linearRampToValueAtTime(0,t+1.6);
+        o.connect(fl); fl.connect(g); g.connect(sfx); o.start(t); o.stop(t+1.7); });
+      thump(t,.12); thump(t+.55,.12); },
+    printer:function(){ var a=ac(); if(!a||!soundOn)return; var t=a.currentTime; for(var i=0;i<10;i++)noise(t+i*.05,.02,"highpass",2000,.04); },
+    murmur:function(dur){ var a=ac(); if(!a||!soundOn)return; var t=a.currentTime; var s=a.createBufferSource(); s.buffer=brown(); s.loop=true;
+      var fl=a.createBiquadFilter(); fl.type="bandpass"; fl.frequency.value=650; var g=a.createGain(); g.gain.setValueAtTime(0,t);
+      var n=Math.floor(dur/.14); for(var i=0;i<n;i++){ g.gain.linearRampToValueAtTime(.05,t+i*.14+.06); g.gain.linearRampToValueAtTime(.01,t+i*.14+.13); }
+      g.gain.linearRampToValueAtTime(0,t+dur); s.connect(fl); fl.connect(g); g.connect(sfx); s.start(t); s.stop(t+dur+.05); }
+  };
+  function startAmbience(){ if(ambStarted)return; var a=ac(); if(!a)return; ambStarted=true;
+    var s=a.createBufferSource(); s.buffer=brown(); s.loop=true; var f=a.createBiquadFilter(); f.type="lowpass"; f.frequency.value=420;
+    var g=a.createGain(); g.gain.value=.05; var lfo=a.createOscillator(); lfo.frequency.value=.13; var lg=a.createGain(); lg.gain.value=.02;
+    lfo.connect(lg); lg.connect(g.gain); s.connect(f); f.connect(g); g.connect(master); s.start(); lfo.start();
+    setInterval(function(){ if(soundOn&&!document.hidden&&Math.random()<.5)SFX.clink(.025); },5000); }
+  function ensureAudio(){ var a=ac(); if(!a)return; if(a.state==="suspended")a.resume(); if(soundOn)startAmbience(); }
+  window.addEventListener("pointerdown",ensureAudio); window.addEventListener("keydown",ensureAudio);
+  var stBtn=document.getElementById("soundToggle");
+  function renderSound(){ if(!stBtn)return; stBtn.classList.toggle("off",!soundOn); stBtn.setAttribute("aria-pressed",String(soundOn)); stBtn.textContent=soundOn?"🔊 HANG BE":"🔇 HANG KI"; }
+  if(stBtn)stBtn.addEventListener("click",function(){ soundOn=!soundOn; var a=ac(); if(a){ master.gain.setTargetAtTime(soundOn?.9:0,a.currentTime,.05); if(soundOn){ if(a.state==="suspended")a.resume(); startAmbience(); } } renderSound(); });
+  renderSound();
+  document.addEventListener("click",function(e){ var t=e.target.closest?e.target.closest(".ctl,.brass-btn,[data-plaque]"):null; if(t)SFX.click(); });
+  window.__cxAudio=function(){ return {on:soundOn,state:AC?AC.state:"none",master:master?+master.gain.value.toFixed(2):null,amb:ambStarted}; };
 
   // hero bokeh + bulbs
   var hb=document.getElementById("heroBokeh");
@@ -555,18 +847,19 @@
   var cams={bet:{x:0,y:40,s:1.5},deal:{x:0,y:0,s:1.1},reveal:{x:0,y:-70,s:1.7},result:{x:0,y:0,s:1}};
   function setCam(k){var c=cams[k];if(!camStage)return;
     camStage.style.transform="translate(-50%,-50%) translate("+c.x+"px,"+c.y+"px) scale("+c.s+")";
-    if(camVp)camVp.classList.toggle("cine",k==="reveal");}
+    if(camVp)camVp.classList.toggle("cine",k==="reveal");
+    if(k==="reveal")SFX.tension();else if(k==="deal")SFX.slide();}
   [].slice.call(document.querySelectorAll("[data-cam]")).forEach(function(b){
     b.addEventListener("click",function(){setCam(b.getAttribute("data-cam"))});});
   var shakeBtn=document.getElementById("shakeBtn");
-  if(shakeBtn)shakeBtn.addEventListener("click",function(){if(!camVp)return;camVp.classList.remove("shake");void camVp.offsetWidth;camVp.classList.add("shake");});
+  if(shakeBtn)shakeBtn.addEventListener("click",function(){if(!camVp)return;camVp.classList.remove("shake");void camVp.offsetWidth;camVp.classList.add("shake");SFX.thud();});
   setCam("deal");
 
   // ---- 03 cards ----
   function pulse(el,cls,ms){if(!el)return;el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls);setTimeout(function(){el.classList.remove(cls)},ms);}
-  var sb=document.getElementById("shineBtn");if(sb)sb.addEventListener("click",function(){pulse(document.getElementById("shineCard"),"shining",1200);});
-  var pb=document.getElementById("peekBtn");if(pb)pb.addEventListener("click",function(){var c=document.getElementById("peekCard");c.classList.toggle("peeking");});
-  var fb=document.getElementById("flipBtn");if(fb)fb.addEventListener("click",function(){document.getElementById("flipCard").classList.toggle("flipped");});
+  var sb=document.getElementById("shineBtn");if(sb)sb.addEventListener("click",function(){pulse(document.getElementById("shineCard"),"shining",1200);SFX.shine();});
+  var pb=document.getElementById("peekBtn");if(pb)pb.addEventListener("click",function(){var c=document.getElementById("peekCard");c.classList.toggle("peeking");SFX.slide();});
+  var fb=document.getElementById("flipBtn");if(fb)fb.addEventListener("click",function(){document.getElementById("flipCard").classList.toggle("flipped");SFX.flip();});
 
   // ---- 04 chips ----
   var stack=document.getElementById("chipStack"),scene=document.getElementById("chipScene"),balEl=document.getElementById("chipBalance");
@@ -583,13 +876,13 @@
     anim.onfinish=function(){c.remove();if(cb)cb();};}
   var betBtn=document.getElementById("betBtn");
   if(betBtn)betBtn.addEventListener("click",function(){if(balance<25)return;balance-=25;balEl.textContent="$"+balance;
-    toss({x:.12,y:.2},{x:.5,y:.6},function(){stackCount++;renderStack();});});
+    toss({x:.12,y:.2},{x:.5,y:.6},function(){stackCount++;renderStack();SFX.clink();});});
   var payBtn=document.getElementById("payBtn");
-  if(payBtn)payBtn.addEventListener("click",function(){var n=Math.max(stackCount,3);for(var i=0;i<n;i++){(function(i){
-    setTimeout(function(){toss({x:.12,y:.2},{x:.5,y:.6},function(){balance+=25;balEl.textContent="$"+balance;});},i*120);})(i);}
+  if(payBtn)payBtn.addEventListener("click",function(){SFX.win();var n=Math.max(stackCount,3);for(var i=0;i<n;i++){(function(i){
+    setTimeout(function(){toss({x:.12,y:.2},{x:.5,y:.6},function(){balance+=25;balEl.textContent="$"+balance;SFX.clink();});},i*120);})(i);}
     stackCount=0;setTimeout(renderStack,400);});
   var sweepBtn=document.getElementById("sweepBtn");
-  if(sweepBtn)sweepBtn.addEventListener("click",function(){stackCount=0;renderStack();});
+  if(sweepBtn)sweepBtn.addEventListener("click",function(){stackCount=0;renderStack();SFX.sweep();});
   renderStack();
 
   // ---- 05 dealer ----
@@ -601,7 +894,7 @@
     if(L){L.setAttribute("cx",64+dx*2.5);L.setAttribute("cy",60+dy*2);}
     if(R){R.setAttribute("cx",86+dx*2.5);R.setAttribute("cy",60+dy*2);}});}
   var dealBtn=document.getElementById("dealBtn"),bubble=document.getElementById("dealerBubble");
-  if(dealBtn)dealBtn.addEventListener("click",function(){if(!svg)return;svg.classList.add("dealing");
+  if(dealBtn)dealBtn.addEventListener("click",function(){if(!svg)return;svg.classList.add("dealing");SFX.slide();
     if(bubble){bubble.textContent="Nincs több tét!";bubble.classList.add("show");}
     setTimeout(function(){svg.classList.remove("dealing");},700);
     setTimeout(function(){if(bubble)bubble.classList.remove("show");},2200);});
@@ -611,11 +904,13 @@
   [].slice.call(document.querySelectorAll("[data-theme]")).forEach(function(b){
     if(b.tagName!=="BUTTON")return;
     b.addEventListener("click",function(){var t=b.getAttribute("data-theme");if(tt)tt.setAttribute("data-theme",t);
-      document.querySelectorAll(".controls [data-theme]").forEach(function(x){x.setAttribute("aria-pressed",x===b)});});});
+      document.querySelectorAll(".controls [data-theme]").forEach(function(x){x.setAttribute("aria-pressed",x===b)});SFX.whoosh();setRoom(t);});});
 
   // ---- 07 chrome ----
   var lb=document.getElementById("lightbar"),lbb=document.getElementById("lightbarBtn");
-  if(lbb)lbb.addEventListener("click",function(){lb.classList.toggle("on");});
+  if(lbb)lbb.addEventListener("click",function(){lb.classList.toggle("on");SFX.tick();});
+  var brass=document.getElementById("brassBtn");
+  if(brass)brass.addEventListener("click",function(){SFX.place();});
 
   // ---- 08 meta ----
   [].slice.call(document.querySelectorAll("[data-plaque]")).forEach(function(p){
@@ -626,9 +921,65 @@
     var name="Bronz";tiers.forEach(function(t){if(comps>=t[0])name=t[1]});
     var tn=document.getElementById("tierName"),tp=document.getElementById("tierPct");
     if(tn)tn.textContent=name;if(tp)tp.textContent=comps+"%";}
-  if(compsBtn)compsBtn.addEventListener("click",function(){comps=Math.min(100,comps+15);renderComps();});
+  if(compsBtn)compsBtn.addEventListener("click",function(){comps=Math.min(100,comps+15);renderComps();SFX.tick();});
   var ticketBtn=document.getElementById("ticketBtn"),ticket=document.getElementById("ticket");
-  if(ticketBtn)ticketBtn.addEventListener("click",function(){ticket.classList.remove("printed");void ticket.offsetWidth;ticket.classList.add("printed");});
+  if(ticketBtn)ticketBtn.addEventListener("click",function(){ticket.classList.remove("printed");void ticket.offsetWidth;ticket.classList.add("printed");SFX.printer();});
   renderComps();
+
+  // ---- 09 cross-modal director ----
+  var xd=document.getElementById("xd"),xdFollow=true,xdTimer=null;
+  var xdBtn=document.getElementById("xdBtn");
+  if(xdBtn)xdBtn.addEventListener("click",function(){if(!xd)return;clearTimeout(xdTimer);SFX.tension();
+    xd.classList.remove("revealed");if(xdFollow)xd.classList.add("tense");
+    xdTimer=setTimeout(function(){xd.classList.add("revealed");SFX.flip();
+      xdTimer=setTimeout(function(){xd.classList.remove("tense");SFX.win();},1400);},reduced?1:1400);});
+  var xdF=document.getElementById("xdFollow");
+  if(xdF)xdF.addEventListener("click",function(){xdFollow=!xdFollow;xdF.setAttribute("aria-pressed",xdFollow);
+    if(!xdFollow&&xd)xd.classList.remove("tense");});
+  var xdR=document.getElementById("xdReset");
+  if(xdR)xdR.addEventListener("click",function(){clearTimeout(xdTimer);if(xd)xd.classList.remove("tense","revealed");});
+
+  // ---- 10 seats ----
+  var seatTalk=document.getElementById("seatTalk");
+  if(seatTalk)seatTalk.addEventListener("click",function(){var ss=[].slice.call(document.querySelectorAll("#seats .seat:not(.empty)"));
+    ss.forEach(function(s){s.classList.add("talk")});SFX.murmur(1.2);setTimeout(function(){ss.forEach(function(s){s.classList.remove("talk")})},1800);});
+  var seatEmpty=document.getElementById("seatEmpty");
+  if(seatEmpty)seatEmpty.addEventListener("click",function(){var on=seatEmpty.getAttribute("aria-pressed")!=="true";
+    seatEmpty.setAttribute("aria-pressed",on);var first=document.querySelector("#seats .seat");
+    if(first)first.classList.toggle("empty",on);});
+
+  // ---- 11 lip-sync ----
+  var lipBtn=document.getElementById("lipBtn"),lipSvg=document.getElementById("lipSvg"),lipBubble=document.getElementById("lipBubble");
+  if(lipBtn)lipBtn.addEventListener("click",function(){if(!lipSvg)return;lipSvg.classList.add("speaking");SFX.murmur(1.6);
+    if(lipBubble)lipBubble.classList.add("show");
+    setTimeout(function(){lipSvg.classList.remove("speaking");if(lipBubble)lipBubble.classList.remove("show")},1600);});
+
+  // ---- 12 foil ----
+  var foilBtn=document.getElementById("foilBtn");
+  if(foilBtn)foilBtn.addEventListener("click",function(){["foilA","foilB"].forEach(function(id,i){
+    setTimeout(function(){pulse(document.getElementById(id),"shining",1200);SFX.shine();},i*180);});});
+
+  // ---- 13 rail toss ----
+  var railScene=document.getElementById("railScene"),railStack=document.getElementById("railStack"),railCount=0;
+  function renderRail(){if(!railStack)return;railStack.innerHTML="";for(var i=0;i<railCount;i++){var c=document.createElement("div");c.className="chip";c.style.bottom=(i*7)+"px";c.style.zIndex=i;c.textContent="$25";railStack.appendChild(c);}}
+  var railBet=document.getElementById("railBet");
+  if(railBet)railBet.addEventListener("click",function(){if(!railScene)return;var c=document.createElement("div");c.className="chip fly-chip";c.textContent="$25";railScene.appendChild(c);
+    var sr=railScene.getBoundingClientRect();var fy=sr.height*.12,ty=sr.height*.66;
+    c.style.left=(sr.width*.5-28)+"px";c.style.top=fy+"px";
+    var a=c.animate([{transform:"translate(0,0) rotate(0)"},{transform:"translate(46px,"+((ty-fy)/2)+"px) rotate(360deg)",offset:.5},{transform:"translate(0,"+(ty-fy)+"px) rotate(720deg)"}],{duration:reduced?1:600,easing:"cubic-bezier(.4,.05,.4,1)"});
+    a.onfinish=function(){c.remove();railCount++;renderRail();SFX.clink();};});
+  var railSweep=document.getElementById("railSweep");
+  if(railSweep)railSweep.addEventListener("click",function(){railCount=0;renderRail();SFX.sweep();});
+  renderRail();
+
+  // ---- 14 vip + reverb ----
+  var vipTable=document.getElementById("vipTable"),revLabel=document.getElementById("revLabel"),revFill=document.getElementById("revFill");
+  var revMap={classic:["Main hall",60],monte:["Monte Carlo",40],macau:["VIP Salon",22]};
+  [].slice.call(document.querySelectorAll("[data-viptheme]")).forEach(function(b){
+    b.addEventListener("click",function(){var t=b.getAttribute("data-viptheme");if(vipTable)vipTable.setAttribute("data-theme",t);
+      document.querySelectorAll("[data-viptheme]").forEach(function(x){x.setAttribute("aria-pressed",x===b)});
+      var m=revMap[t];if(revLabel)revLabel.textContent=m[0];if(revFill)revFill.style.width=m[1]+"%";SFX.whoosh();setRoom(t);});});
+  var vipTicketBtn=document.getElementById("vipTicketBtn"),vipTicket=document.getElementById("vipTicket");
+  if(vipTicketBtn)vipTicketBtn.addEventListener("click",function(){vipTicket.classList.remove("printed");void vipTicket.offsetWidth;vipTicket.classList.add("printed");SFX.printer();});
 })();
 </script>
